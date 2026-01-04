@@ -1,37 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend (Next.js + TypeScript)
 
-## Getting Started
+Проект — Next.js (App Router) приложение на TypeScript. Код организован так, чтобы:
+- маршруты (`app/`) были тонкими и не содержали бизнес-логики;
+- доменные модули были изолированы и переиспользуемы;
+- UI-kit и утилиты не зависели от бизнес-кода;
+- было понятно, куда класть новый код и как его импортировать.
 
-First, run the development server:
+## Быстрый старт
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+````
+
+Открыть: [http://localhost:3000](http://localhost:3000)
+
+## Архитектура и структура папок
+
+Код делится на слои. Импортировать можно только “вниз” по слоям:
+
+`app -> pages -> widgets -> features -> entities -> shared`
+
+### `src/app/` — маршруты Next.js (тонкий слой)
+
+Только `layout.tsx`, `page.tsx`, route groups и Next-специфика.
+
+Правило: **никаких больших компонентов и бизнес-логики**.
+Route должен просто подключать модуль страницы из `src/pages`.
+
+Пример:
+
+```tsx
+import { DashboardEmailPage } from "@/pages/dashboard/email";
+
+export default function Page() {
+  return <DashboardEmailPage />;
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### `src/pages/` — модули страниц
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Собирают страницу из `widgets/features/entities`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Использовать, когда UI/логика относится строго к конкретному route.
 
-## Learn More
+Пример:
 
-To learn more about Next.js, take a look at the following resources:
+* `pages/dashboard/email`
+* `pages/dashboard/billing`
+* `pages/dashboard/analytics`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### `src/widgets/` — крупные блоки страниц
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Большие секции, которые можно переиспользовать на разных страницах:
 
-## Deploy on Vercel
+* `widgets/app-shell` (Header/Sidebar)
+* `widgets/billing/current-subscription`
+* `widgets/analytics/overview`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Правило: widget может собирать несколько features/entities.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Frontend
+### `src/features/` — пользовательские действия (операции)
+
+Изолированные “use-cases”: отправить email, отменить подписку, апгрейднуть план.
+
+Содержит:
+
+* `ui/` (формы/модалки/кнопки операции)
+* `model/` (хуки useCase)
+* `api/` (если API именно про действие)
+
+Примеры:
+
+* `features/email/send`
+* `features/billing/cancel-subscription`
+* `features/auth/sign-in`
+
+### `src/entities/` — доменные сущности
+
+Описывают данные и минимальный UI для их отображения.
+
+Содержит:
+
+* `model/` (types/state helpers)
+* `api/` (запросы сущности)
+* `ui/` (компоненты отображения сущности: card/badge/avatar)
+
+Примеры:
+
+* `entities/subscription`
+* `entities/email-template`
+* `entities/analytics`
+
+### `src/shared/` — базовый слой (не знает о бизнесе)
+
+Здесь лежит всё, что может переиспользоваться везде и не должно зависеть от доменов:
+
+* `shared/ui` — UI-kit primitives (Button/Input/Modal/Charts primitives и т.д.)
+* `shared/lib` — утилиты, форматтеры, общие хуки, http client
+* `shared/config` — env, routes, constants
+* `shared/styles` — глобальные стили
+* `shared/types` — базовые типы
+
+### `src/i18n/` — переводы
+
+Хранение переводов по локалям и namespaces (например `common`, `email`, `billing`, `analytics`).
+
+### `src/app-providers/` — провайдеры приложения
+
+Единое место для подключения:
+
+* темы
+* i18n
+* auth/session
+* query state (если используется)
+
+Подключается в корневом `app/layout.tsx`.
+
+## Правила импортов (важно)
+
+1. Импортируем модуль через публичный API (`index.ts`):
+
+   * ✅ `import { SubscriptionBadge } from "@/entities/subscription";`
+   * ❌ `import { SubscriptionBadge } from "@/entities/subscription/ui/SubscriptionBadge";`
+
+2. Слои не должны импортировать “вверх”:
+
+* `entities` не импортирует `features/widgets/pages/app`
+* `shared` не импортирует ничего кроме `shared`
+
+## Где создавать новый код
+
+* Новый домен (например “notifications”) → `entities/notifications` + `features/notifications/*` + widgets/pages при необходимости.
+* Новый экран в dashboard → `pages/dashboard/<screen>` + соответствующие widgets/features.
+* Новый общий компонент кнопки/инпута → `shared/ui`.
+* Новый форматтер/хелпер → `shared/lib`.
+
+## Скрипты
+
+* `npm run dev` — локальная разработка
+* `npm run build` — production build
+* `npm run start` — запуск production
+* `npm run lint` — линтер
