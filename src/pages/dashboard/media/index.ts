@@ -1,0 +1,1 @@
+export { DashboardMediaPage } from "./page";

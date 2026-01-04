@@ -1,0 +1,1 @@
+export { DashboardAnalyticsPage } from "./page";
