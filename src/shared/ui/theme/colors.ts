@@ -43,10 +43,6 @@ export const colors = {
     light: "#9ca3af",
     dark:  "#64748b",
   },
-  "muted-foreground": {
-    light: "#9ca3af",
-    dark:  "#64748b",
-  },
 
   //
   // DANGER

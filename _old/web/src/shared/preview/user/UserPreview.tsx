@@ -57,7 +57,7 @@ export const UserPreview = ({
               content={t(messages.tooltips.plan)}
               placement={TooltipPosition.bottom}
             >
-              <span className="inline-flex shrink-0 items-center rounded-full border border-border/60 bg-muted/40 px-2 py-[2px] text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              <span className="inline-flex shrink-0 items-center rounded-full border border-border/60 bg-muted/40 px-2 py-[2px] text-[10px] font-medium uppercase tracking-wide text-muted">
                 {planLabel}
               </span>
             </Tooltip>

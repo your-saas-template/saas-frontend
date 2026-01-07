@@ -66,7 +66,7 @@ export default function UserMenu() {
                   {user.name || user.email}
                 </div>
                 {user.name && user.email && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted">
                     {user.email}
                   </div>
                 )}

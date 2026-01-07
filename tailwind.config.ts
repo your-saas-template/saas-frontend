@@ -17,7 +17,6 @@ const config: Config = {
         secondary: "var(--color-secondary)",
         border: "var(--color-border)",
         muted: "var(--color-muted)",
-        "muted-foreground": "var(--color-muted-foreground)",
         danger: "var(--color-danger)",
         dangerSoft: "var(--color-dangerSoft)",
         success: "var(--color-success)",

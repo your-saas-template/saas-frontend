@@ -80,7 +80,7 @@ export function AuthProvider({
     }
 
     const refreshPromise = (async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
         const res = await fetch("/api/me", {
           cache: "no-store",
@@ -97,7 +97,7 @@ export function AuthProvider({
       } catch {
         setUser(null);
       } finally {
-        setLoading(false);
+        // setLoading(false);
         refreshInFlight.current = null;
       }
     })();

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ButtonHTMLAttributes } from "react";
+import { ButtonHTMLAttributes } from "react";
 import clsx from "clsx";
 
 export enum ButtonVariantEnum {
