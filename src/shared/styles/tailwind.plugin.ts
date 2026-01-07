@@ -1,5 +1,5 @@
 import plugin from "tailwindcss/plugin";
-import { colors } from "../ui/theme/colors";
+import { colors } from "../ui/theme/colors.ts";
 
 export const themePlugin = plugin(({ addBase }) => {
   const lightVars: Record<string, string> = {};

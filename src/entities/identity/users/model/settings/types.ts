@@ -5,6 +5,6 @@ import { Theme } from "@/shared/ui";
  * Mirrors OpenAPI schema "UserSettings".
  */
 export interface UserSettings {
+  locale: string;
   theme: Theme; // "light" | "dark" | "system"
-  timezone: string; // IANA timezone, e.g. "Europe/Warsaw"
 }
