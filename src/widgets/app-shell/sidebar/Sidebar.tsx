@@ -188,8 +188,8 @@ export function Sidebar({
       <aside
         className={clsx(
           "hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 z-10",
-          "bg-surface text-text border-r border-border",
-          "transition-[width] duration-300 ease-in-out motion-reduce:transition-none",
+          "bg-background text-text border-r border-border",
+          "transition-[width] duration-300 ease-in-out",
           isExpanded ? "md:w-64" : "md:w-16",
         )}
         onMouseEnter={onEnter}
@@ -230,10 +230,7 @@ export function Sidebar({
         )}
 
         <div
-          className={clsx(
-            "border-t border-border",
-            isExpanded ? "p-3" : "p-2",
-          )}
+          className={clsx("border-t border-border", isExpanded ? "p-3" : "p-2")}
         >
           <Button
             size={ButtonSizeEnum.md}

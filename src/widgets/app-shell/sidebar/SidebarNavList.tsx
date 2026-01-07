@@ -78,7 +78,7 @@ export const SidebarNavList = ({
       "truncate transition-[opacity,transform,max-width] duration-200 ease-in-out motion-reduce:transition-none",
       expanded
         ? "max-w-[160px] opacity-100 translate-x-0"
-        : "max-w-0 opacity-0 -translate-x-2",
+        : "max-w-0 opacity-0 hidden -translate-x-2",
     );
 
     return (

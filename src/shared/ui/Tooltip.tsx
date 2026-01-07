@@ -201,7 +201,7 @@ export default function Tooltip({
       : "border-t-0 border-r-0";
 
   return (
-    <span className="relative inline-flex">
+    <span className="relative cursor-pointer">
       {child}
       {open &&
         typeof document !== "undefined" &&
