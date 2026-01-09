@@ -127,7 +127,11 @@ export default function NetworkStatusToast() {
         role="status"
         aria-live="polite"
       >
-        <div className="flex items-start gap-3">
+        <div
+          className={"flex gap-3 " + ((!isOffline && !isWeak)
+              ? "items-center"
+              : "items-start")}
+        >
           <span
             className={[
               "mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full",
@@ -141,11 +145,7 @@ export default function NetworkStatusToast() {
             <span
               className={[
                 "block h-2.5 w-2.5 rounded-full",
-                isOffline
-                  ? "bg-danger"
-                  : isWeak
-                  ? "bg-warning"
-                  : "bg-success",
+                isOffline ? "bg-danger" : isWeak ? "bg-warning" : "bg-success",
               ].join(" ")}
             />
           </span>

@@ -45,20 +45,7 @@ export function ToastCard({ toast, onClose }: ToastCardProps) {
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-start gap-3 bg-background px-4 py-3">
-        <span
-          className={[
-            "mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full",
-            styles.dotOuter,
-          ].join(" ")}
-        >
-          <span
-            className={["block h-2.5 w-2.5 rounded-full", styles.dotInner].join(
-              " ",
-            )}
-          />
-        </span>
-
+      <div className="flex items-center gap-3 px-4 py-3">
         <div className="flex-1">
           <p className="leading-5">{toast.title}</p>
           {toast.description && (
