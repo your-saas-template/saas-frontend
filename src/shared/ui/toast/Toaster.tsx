@@ -6,8 +6,6 @@ export function AppToaster() {
   return (
     <Toaster
       position="top-center"
-      visibleToasts={3}
-      expand
       offset={16}
       toastOptions={{
         duration: 4000,
