@@ -99,7 +99,7 @@ export const LanguageSwitcher = () => {
                 key={lng.code}
                 onClick={() => changeLang(lng.code)}
                 className={`block w-full text-left px-3 py-2 text-sm transition-colors text-text hover:bg-primaryHover hover:text-onPrimary active:bg-primary active:text-onPrimary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
-                  active ? "bg-primary text-onPrimary" : "bg-background"
+                  active ? "bg-primary text-white" : "bg-background"
                 }`}
                 role="option"
                 aria-selected={active}

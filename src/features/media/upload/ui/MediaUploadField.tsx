@@ -50,8 +50,18 @@ function isValidHttpUrl(value: string): boolean {
   }
 }
 
-const imageExtensionRegex =
-  /\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i;
+function isDataImageUrl(value: string): boolean {
+  // format: data:image/<type>;base64,<payload>
+  return /^data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=\s]+$/i.test(
+    value.trim(),
+  );
+}
+
+function isSupportedImageUrl(value: string): boolean {
+  return isValidHttpUrl(value) || isDataImageUrl(value);
+}
+
+const imageExtensionRegex = /\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i;
 
 function extractFirstUriListEntry(value: string): string | null {
   const lines = value
@@ -68,9 +78,13 @@ function extractImageFromHtml(html: string): string | null {
 }
 
 async function isRemoteImage(url: string): Promise<boolean> {
-  if (imageExtensionRegex.test(url)) return true;
+  const trimmed = url.trim();
+
+  if (isDataImageUrl(trimmed)) return true;
+  if (imageExtensionRegex.test(trimmed)) return true;
+
   try {
-    const response = await fetch(url, { method: "HEAD" });
+    const response = await fetch(trimmed, { method: "HEAD" });
     const contentType = response.headers.get("content-type");
     return Boolean(contentType?.startsWith("image/"));
   } catch {
@@ -132,8 +146,13 @@ export function MediaUploadField({
     displayPreview && "previewUrl" in displayPreview
       ? displayPreview.name || t(messages.media.upload.previewNameFallback)
       : displayPreview
-        ? displayPreview.name ?? displayPreview.filename
-        : null;
+      ? displayPreview.name ?? displayPreview.filename
+      : null;
+
+  const openFilePicker = () => {
+    if (disabled) return;
+    fileInputRef.current?.click();
+  };
 
   const handleFileSelection = (file: File | null) => {
     if (!file || disabled) return;
@@ -152,6 +171,7 @@ export function MediaUploadField({
     setUrlError(null);
     setUrlInput("");
     setShowUrlInput(false);
+
     const nextSelection: MediaUploadSelection = {
       type: "file",
       file,
@@ -180,7 +200,7 @@ export function MediaUploadField({
       setUrlError(null);
       return;
     }
-    if (!isValidHttpUrl(trimmed)) {
+    if (!isSupportedImageUrl(trimmed)) {
       setUrlError(t(messages.media.upload.previewError));
       return;
     }
@@ -211,9 +231,7 @@ export function MediaUploadField({
     await applyUrlSelection(urlInput);
   };
 
-  const handleUrlKeyDown = async (
-    event: KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleUrlKeyDown = async (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
       await handleUrlSave();
@@ -257,7 +275,9 @@ export function MediaUploadField({
     setSelection(null);
   };
 
-  const footerMessage = [error, urlError, previewError].filter(Boolean).join(" • ");
+  const footerMessage = [error, urlError, previewError]
+    .filter(Boolean)
+    .join(" • ");
 
   const handlePaste = async (event: ClipboardEvent<HTMLElement>) => {
     if (disabled) return;
@@ -285,17 +305,12 @@ export function MediaUploadField({
       htmlImage ||
       (plainText ? plainText.trim() : null);
 
-    if (!rawValue || !isValidHttpUrl(rawValue)) return;
+    if (!rawValue || !isSupportedImageUrl(rawValue)) return;
 
     event.preventDefault();
     setUrlInput(rawValue);
     setShowUrlInput(true);
     await applyUrlSelection(rawValue);
-  };
-
-  const handleOpenPicker = () => {
-    if (disabled) return;
-    fileInputRef.current?.click();
   };
 
   return (
@@ -310,7 +325,11 @@ export function MediaUploadField({
         )
       }
     >
-      <div className="space-y-3 focus:outline-none" onPaste={handlePaste} tabIndex={0}>
+      <div
+        className="space-y-3 focus:outline-none"
+        onPaste={handlePaste}
+        tabIndex={0}
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           {displayPreview && (
             <div className="relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl border border-border bg-surface/60">
@@ -343,11 +362,12 @@ export function MediaUploadField({
               >
                 <X size={14} />
               </Button>
+
               <Button
                 type="button"
                 size={ButtonSizeEnum.sm}
                 variant={ButtonVariantEnum.icon}
-                onClick={handleOpenPicker}
+                onClick={openFilePicker}
                 disabled={disabled}
                 className="absolute bottom-2 right-2 h-7 w-7 !px-0 !py-0"
                 aria-label={t(messages.media.upload.replace)}
@@ -367,67 +387,78 @@ export function MediaUploadField({
               onChange={(event) => handleFileChange(event.target.files)}
               disabled={disabled}
             />
-            <DropZone
-              isDisabled={disabled}
-              onDrop={async (event) => {
+            <div
+              role="button"
+              tabIndex={disabled ? -1 : 0}
+              aria-disabled={disabled}
+              onClick={() => {
                 if (disabled) return;
-                for (const item of event.items) {
-                  if (isFileDropItem(item)) {
-                    const file = await item.getFile();
-                    handleFileSelection(file);
-                    break;
-                  }
+                openFilePicker();
+              }}
+              onKeyDown={(e) => {
+                if (disabled) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openFilePicker();
                 }
               }}
-              onClick={handleOpenPicker}
-              onKeyDown={(event) => {
-                if (disabled) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  handleOpenPicker();
-                }
-              }}
-              className={({ isDropTarget, isFocusVisible }) =>
-                clsx(
-                  "flex w-full flex-col items-start gap-2 rounded-xl border border-dashed px-5 py-6 text-sm transition",
-                  "bg-surface/50 text-secondary",
-                  isDropTarget && "border-primary bg-primary/5 text-text",
-                  isFocusVisible && "ring-2 ring-primary/30",
-                  disabled
-                    ? "cursor-not-allowed opacity-60"
-                    : "cursor-pointer hover:border-primary/60 hover:bg-primary/5",
-                )
-              }
-              aria-busy={isUploading || isCheckingUrl}
+              className="outline-none"
             >
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 text-primary">
-                  <Upload size={18} />
-                </span>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-text">
-                    {t(
-                      isCoarsePointer
-                        ? messages.media.upload.dropzoneTitleMobile
-                        : messages.media.upload.dropzoneTitleDesktop,
-                    )}
-                  </p>
-                  <p className="text-xs text-secondary">
-                    {t(
-                      isCoarsePointer
-                        ? messages.media.upload.dropzoneSubtitleMobile
-                        : messages.media.upload.dropzoneSubtitleDesktop,
-                    )}
-                  </p>
+              <DropZone
+                isDisabled={disabled}
+                onDrop={async (event) => {
+                  if (disabled) return;
+                  for (const item of event.items) {
+                    if (isFileDropItem(item)) {
+                      const file = await item.getFile();
+                      handleFileSelection(file);
+                      break;
+                    }
+                  }
+                }}
+                className={({ isDropTarget, isFocusVisible }) =>
+                  clsx(
+                    "flex w-full flex-col items-start gap-2 rounded-xl border border-dashed px-5 py-6 text-sm transition",
+                    "bg-surface/50 text-secondary",
+                    isDropTarget && "border-primary bg-primary/5 text-text",
+                    isFocusVisible && "ring-2 ring-primary/30",
+                    disabled
+                      ? "cursor-not-allowed opacity-60"
+                      : "cursor-pointer hover:border-primary/60 hover:bg-primary/5",
+                  )
+                }
+                aria-busy={isUploading || isCheckingUrl}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-primary">
+                    <Upload size={18} />
+                  </span>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-text">
+                      {t(
+                        isCoarsePointer
+                          ? messages.media.upload.dropzoneTitleMobile
+                          : messages.media.upload.dropzoneTitleDesktop,
+                      )}
+                    </p>
+                    <p className="text-xs text-secondary">
+                      {t(
+                        isCoarsePointer
+                          ? messages.media.upload.dropzoneSubtitleMobile
+                          : messages.media.upload.dropzoneSubtitleDesktop,
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              {(isUploading || isCheckingUrl) && (
-                <div className="flex items-center gap-2 text-xs text-secondary">
-                  <Spinner size={14} />
-                  <span>{t(messages.common.loading)}</span>
-                </div>
-              )}
-            </DropZone>
+
+                {(isUploading || isCheckingUrl) && (
+                  <div className="flex items-center gap-2 text-xs text-secondary">
+                    <Spinner size={14} />
+                    <span>{t(messages.common.loading)}</span>
+                  </div>
+                )}
+              </DropZone>
+            </div>
 
             {showUrlInput ? (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -435,7 +466,9 @@ export function MediaUploadField({
                   <Input
                     id="media-url"
                     value={urlInput}
-                    onChange={(event) => handleUrlInputChange(event.target.value)}
+                    onChange={(event) =>
+                      handleUrlInputChange(event.target.value)
+                    }
                     onKeyDown={handleUrlKeyDown}
                     placeholder={t(messages.media.upload.urlPlaceholder)}
                     disabled={disabled}
@@ -451,7 +484,9 @@ export function MediaUploadField({
                   variant={ButtonVariantEnum.secondary}
                   onClick={handleUrlSave}
                   disabled={
-                    disabled || isCheckingUrl || !isValidHttpUrl(urlInput.trim())
+                    disabled ||
+                    isCheckingUrl ||
+                    !isSupportedImageUrl(urlInput.trim())
                   }
                   className="sm:min-w-[90px]"
                 >
