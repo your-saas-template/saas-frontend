@@ -87,7 +87,7 @@ export const UserPreview = ({
           <UserAvatar
             user={user}
             aria-label={user?.email || "User avatar"}
-            className="w-full h-full"
+            variant="sidebar"
           />
         </div>
         {!hideText && (

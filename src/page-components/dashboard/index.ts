@@ -4,7 +4,12 @@ export { DashboardSubscriptionPage } from "./subscription";
 export { DashboardMediaPage } from "./media";
 export { DashboardUsersPage } from "./users";
 export { DashboardFeedbackPage } from "./feedback";
-export { DashboardAccountPage } from "./account";
+export {
+  DashboardAccountProfilePage,
+  DashboardAccountPreferencesPage,
+  DashboardAccountSecurityPage,
+  DashboardAccountDangerPage,
+} from "./account";
 export { DashboardAnalyticsPage } from "./analytics";
 export { DashboardTrafficAnalyticsPage } from "./analytics/traffic";
 export { DashboardBusinessAnalyticsPage } from "./analytics/business";

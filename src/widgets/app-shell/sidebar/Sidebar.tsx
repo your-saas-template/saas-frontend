@@ -14,6 +14,7 @@ import {
   Mail,
   Menu,
   MessageSquare,
+  User,
   Users2,
 } from "lucide-react";
 
@@ -77,6 +78,12 @@ export function Sidebar({
         label: messages.dashboard.sidebar.items.subscription,
         icon: CreditCard,
         canView: subscriptionsPermissions.own.view,
+      },
+      {
+        href: "/dashboard/account/profile",
+        label: messages.dashboard.sidebar.items.account,
+        icon: User,
+        canView: true,
       },
       {
         href: "/dashboard/email",
