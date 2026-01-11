@@ -34,18 +34,6 @@ export const DashboardAccountPreferencesPage = () => {
           </div>
           <LanguageSwitcher />
         </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <P className="text-sm font-medium">
-              {t(messages.dashboard.account.dateTimeFormatLabel)}
-            </P>
-            <Small>{t(messages.dashboard.account.dateTimeFormatDescription)}</Small>
-          </div>
-          <Small color={TextColorEnum.Muted}>
-            {t(messages.dashboard.account.comingSoon)}
-          </Small>
-        </div>
       </div>
     </SectionCard>
   );

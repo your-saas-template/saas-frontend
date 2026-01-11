@@ -36,8 +36,6 @@ export type SelectProps = {
   invalid?: boolean;
 };
 
-
-
 export function Select({
   value,
   options,
@@ -86,7 +84,11 @@ export function Select({
       <AriaSelect
         id={id}
         aria-labelledby={id ? `${id}-label` : undefined}
-        aria-label={!id ? placeholderOption?.label || t(messages.common.actions.select) : undefined}
+        aria-label={
+          !id
+            ? placeholderOption?.label || t(messages.common.actions.select)
+            : undefined
+        }
         isDisabled={isDisabled}
         isInvalid={invalid}
         selectionMode={isMulti ? "multiple" : "single"}
@@ -98,7 +100,11 @@ export function Select({
         onSelectionChange={(selection) => {
           if (isMulti) {
             if (selection === "all") {
-              onChange(options.filter((opt) => opt.value !== "").map((opt) => opt.value));
+              onChange(
+                options
+                  .filter((opt) => opt.value !== "")
+                  .map((opt) => opt.value),
+              );
               return;
             }
             onChange(Array.from(selection) as string[]);
@@ -124,28 +130,17 @@ export function Select({
           <SelectValue>
             {({ selectedText }) => (
               <span className="flex-1 min-w-0 truncate">
-                {selectedText || placeholderOption?.label || t(messages.common.actions.select)}
+                {selectedText ||
+                  placeholderOption?.label ||
+                  t(messages.common.actions.select)}
               </span>
             )}
           </SelectValue>
+
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
             <ChevronDown size={16} className="shrink-0" />
           </span>
         </AriaButton>
-
-        {isClearable && hasValue && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onChange(isMulti ? [] : "");
-            }}
-            className="absolute right-9 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:text-danger focus:outline-none focus:ring-2 focus:ring-danger/40"
-            aria-label={t(messages.common.actions.clear)}
-          >
-            <X size={12} />
-          </button>
-        )}
 
         <Popover
           className="z-50 mt-2 w-[--trigger-width] rounded-lg border border-border bg-background shadow-lg"
@@ -163,6 +158,7 @@ export function Select({
                 />
               </div>
             )}
+
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-muted">
                 {t(messages.common.empty.title)}
@@ -186,6 +182,27 @@ export function Select({
           </div>
         </Popover>
       </AriaSelect>
+
+      {/* ✅ Clear button must be OUTSIDE AriaSelect */}
+      {isClearable && hasValue && (
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            // prevent focus shift + prevent opening the Select
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onChange(isMulti ? [] : "");
+          }}
+          className="absolute right-9 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:text-danger focus:outline-none focus:ring-2 focus:ring-danger/40"
+          aria-label={t(messages.common.actions.clear)}
+        >
+          <X size={12} />
+        </button>
+      )}
     </div>
   );
-};
+}

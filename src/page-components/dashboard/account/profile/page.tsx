@@ -3,6 +3,7 @@
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { getTimeZones } from "@vvo/tzdb";
 import countries from "i18n-iso-countries";
+import enCountries from "i18n-iso-countries/langs/en.json";
 
 import { useAuth, UserApi } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
@@ -10,6 +11,9 @@ import { useI18n } from "@/shared/lib/i18n";
 import type { MediaItem } from "@/entities/content/media";
 
 import Spinner from "@/shared/ui/loading/Spinner";
+import { Container } from "@/shared/layout/Container";
+import { PageHeader } from "@/shared/layout/PageHeader";
+import { PageShell } from "@/shared/layout/PageShell";
 import { P, Small, TextColorEnum } from "@/shared/ui/Typography";
 import { Button, ButtonSizeEnum, ButtonVariantEnum } from "@/shared/ui/Button";
 import Field from "@/shared/ui/forms/Field";
@@ -25,45 +29,50 @@ import { MediaApi } from "@/entities/content/media";
 import { resolveMediaName } from "@/shared/lib/media";
 import { toast } from "@/shared/ui/toast/toast";
 
+countries.registerLocale(enCountries as any);
+
 const normalizeNullable = (value: string) => {
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 };
 
 export const DashboardAccountProfilePage = () => {
-  const { t, i18n } = useI18n();
+  const { t } = useI18n();
   const { user, refreshUser } = useAuth();
+
   const updateUser = UserApi.User.useUpdateUser();
   const accountQuery = UserApi.Account.useAccountMe();
   const updateAccountProfile = UserApi.Account.useUpdateAccountProfile();
+
+  const uploadMedia = MediaApi.useUploadMedia();
+  const account = accountQuery.data;
 
   const [name, setName] = useState<string>(user?.name ?? "");
   const [avatar, setAvatar] = useState<MediaItem | null>(user?.avatar ?? null);
   const [avatarSelection, setAvatarSelection] =
     useState<MediaUploadSelection | null>(null);
+
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [timezone, setTimezone] = useState("");
-  const [profileError, setProfileError] = useState<string | null>(null);
-  const [countryLocale, setCountryLocale] = useState("en");
 
-  const uploadMedia = MediaApi.useUploadMedia();
-
-  const account = accountQuery.data;
-
-  const handleNameSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
     const hasNameChange = name !== (user?.name ?? "");
     const hasAvatarChange =
       avatar?.id !== user?.avatar?.id || Boolean(avatarSelection);
+
     const hasProfileChange =
+      phone !== (account?.phone ?? "") ||
       country !== (account?.country ?? "") ||
       timezone !== (account?.timezone ?? "");
 
-    if (!hasNameChange && !hasAvatarChange && !hasProfileChange) {
-      return;
-    }
+    if (!hasNameChange && !hasAvatarChange && !hasProfileChange) return;
 
     setUploadError(null);
     setProfileError(null);
@@ -77,12 +86,14 @@ export const DashboardAccountProfilePage = () => {
           avatarSelection,
           avatarSelection.name || name,
         );
+
         const { media } = await uploadMedia.mutateAsync({
           file:
             avatarSelection.type === "file" ? avatarSelection.file : undefined,
           url: avatarSelection.type === "url" ? avatarSelection.url : undefined,
           name: inferredName || undefined,
         });
+
         avatarId = media.id;
         setAvatar(media);
         setAvatarSelection(null);
@@ -106,6 +117,7 @@ export const DashboardAccountProfilePage = () => {
 
       if (hasProfileChange) {
         await updateAccountProfile.mutateAsync({
+          phone: normalizeNullable(phone),
           country: normalizeNullable(country),
           timezone: normalizeNullable(timezone),
         });
@@ -133,6 +145,8 @@ export const DashboardAccountProfilePage = () => {
 
   useEffect(() => {
     if (!account) return;
+
+    setPhone(account.phone ?? "");
     setCountry(account.country ?? "");
     setTimezone(
       account.timezone ??
@@ -142,62 +156,45 @@ export const DashboardAccountProfilePage = () => {
     );
   }, [account]);
 
-  useEffect(() => {
-    let isActive = true;
-    const baseLocale = (user?.settings?.locale ?? i18n.language ?? "en")
-      .split("-")[0]
-      .toLowerCase();
-    const loadLocale = (locale: string) =>
-      import(`i18n-iso-countries/langs/${locale}.json`).then((module) => {
-        if (!isActive) return;
-        countries.registerLocale(module.default ?? module);
-        setCountryLocale(locale);
-      });
-
-    loadLocale(baseLocale).catch(() => {
-      if (baseLocale === "en") return;
-      loadLocale("en");
-    });
-
-    return () => {
-      isActive = false;
-    };
-  }, [i18n.language, user?.settings?.locale]);
-
   const countryOptions = useMemo(() => {
-    const countryNames = countries.getNames(countryLocale, { select: "official" });
-    const options = Object.entries(countryNames)
-      .map(([code, label]) => ({
-        value: code,
-        label,
-      }))
+    const placeholder = { value: "", label: t(messages.common.actions.select) };
+
+    const names =
+      countries.getNames("en", { select: "official" }) ?? ({} as Record<
+        string,
+        string
+      >);
+
+    const options = Object.entries(names)
+      .map(([code, label]) => ({ value: code, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
-    return [{ value: "", label: t(messages.common.actions.select) }, ...options];
-  }, [countryLocale, t]);
+
+    return [placeholder, ...options];
+  }, [t]);
 
   const timezoneOptions = useMemo(() => {
-    const rawLocale = user?.settings?.locale ?? i18n.language ?? "en";
-    const locale = rawLocale.startsWith("ru") ? "ru" : "en";
-    const displayNames =
-      typeof Intl !== "undefined" && "DisplayNames" in Intl
-        ? new Intl.DisplayNames([locale], { type: "timeZone" })
-        : null;
+    const placeholder = { value: "", label: t(messages.common.actions.select) };
+
     const options = getTimeZones()
       .map((zone) => ({
         value: zone.name,
-        label: displayNames?.of(zone.name) ?? zone.name,
+        label: zone.name,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-    return [{ value: "", label: t(messages.common.actions.select) }, ...options];
-  }, [i18n.language, t, user?.settings?.locale]);
+
+    return [placeholder, ...options];
+  }, [t]);
 
   const hasProfileChanges = useMemo(() => {
     const hasNameChange = name !== (user?.name ?? "");
     const hasAvatarChange =
       avatar?.id !== user?.avatar?.id || Boolean(avatarSelection);
+
     const hasProfileChange =
+      phone !== (account?.phone ?? "") ||
       country !== (account?.country ?? "") ||
       timezone !== (account?.timezone ?? "");
+
     return hasNameChange || hasAvatarChange || hasProfileChange;
   }, [
     name,
@@ -205,6 +202,8 @@ export const DashboardAccountProfilePage = () => {
     avatar?.id,
     user?.avatar?.id,
     avatarSelection,
+    phone,
+    account?.phone,
     country,
     account?.country,
     timezone,
@@ -212,91 +211,123 @@ export const DashboardAccountProfilePage = () => {
   ]);
 
   return (
-    <LoadingOverlay
-      loading={loading || accountQuery.isLoading}
-      className="rounded-xl"
-    >
-      <SectionCard
-        title={t(messages.dashboard.account.profileTitle)}
-        description={t(messages.dashboard.account.profileDescription)}
-      >
-        <form onSubmit={handleNameSubmit} className="space-y-4">
-          <Field id="name" label={t(messages.validation.nameLabel)}>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder={t(messages.validation.namePlaceholder)}
-            />
-          </Field>
+    <PageShell>
+      <Container>
+        <PageHeader
+          title={t(messages.dashboard.account.profileTitle)}
+          subtitle={t(messages.dashboard.account.profileDescription)}
+          subtitleColor={TextColorEnum.Secondary}
+        />
 
-          <MediaUploadField
-            label={t(messages.media.fields.avatarLabel)}
-            savedMedia={avatar}
-            onSavedChange={(media) => {
-              setAvatar(media);
-              setAvatarSelection(null);
-            }}
-            onSelectionChange={(selection) => {
-              setAvatarSelection(selection);
-              setUploadError(null);
-            }}
-            error={uploadError}
-            disabled={loading || uploadMedia.isPending}
-            isUploading={uploadMedia.isPending}
-          />
-
-          <div className="space-y-1">
-            <Small className="uppercase tracking-wide font-medium">
-              {t(messages.auth.email)}
-            </Small>
-            <P className="text-sm font-medium">{user?.email}</P>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field id="country" label={t(messages.dashboard.account.countryLabel)}>
-              <Select
-                id="country"
-                value={country}
-                onChange={(value) => setCountry(value as string)}
-                options={countryOptions}
-                isSearchable
-              />
-            </Field>
-
-            <Field
-              id="timezone"
-              label={t(messages.dashboard.account.timezoneLabel)}
+        <section className="flex flex-col gap-8">
+          <LoadingOverlay
+            loading={loading || accountQuery.isLoading}
+            className="rounded-xl"
+          >
+            <SectionCard
+              title={t(messages.dashboard.account.profileTitle)}
+              description={t(messages.dashboard.account.profileDescription)}
             >
-              <Select
-                id="timezone"
-                value={timezone}
-                onChange={(value) => setTimezone(value as string)}
-                options={timezoneOptions}
-                isSearchable
-              />
-            </Field>
-          </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Field id="name" label={t(messages.validation.nameLabel)}>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder={t(messages.validation.namePlaceholder)}
+                  />
+                </Field>
 
-          {profileError && (
-            <Small color={TextColorEnum.Danger}>{profileError}</Small>
-          )}
+                <MediaUploadField
+                  label={t(messages.media.fields.avatarLabel)}
+                  savedMedia={avatar}
+                  onSavedChange={(media) => {
+                    setAvatar(media);
+                    setAvatarSelection(null);
+                  }}
+                  onSelectionChange={(selection) => {
+                    setAvatarSelection(selection);
+                    setUploadError(null);
+                  }}
+                  error={uploadError}
+                  disabled={loading || uploadMedia.isPending}
+                  isUploading={uploadMedia.isPending}
+                />
 
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              size={ButtonSizeEnum.md}
-              variant={ButtonVariantEnum.primary}
-              disabled={loading || !hasProfileChanges}
-              className="flex items-center gap-2"
-            >
-              {loading && <Spinner size={16} />}
-              <span>{t(messages.common.actions.saveChanges)}</span>
-            </Button>
-          </div>
-        </form>
-      </SectionCard>
-    </LoadingOverlay>
+                <div className="space-y-1">
+                  <Small className="uppercase tracking-wide font-medium">
+                    {t(messages.auth.email)}
+                  </Small>
+                  <P className="text-sm font-medium">{user?.email}</P>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    id="phone"
+                    label={t(messages.dashboard.account.phoneLabel)}
+                  >
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
+                      placeholder="+12025550123"
+                    />
+                  </Field>
+
+                  <div className="hidden md:block" />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    id="country"
+                    label={t(messages.dashboard.account.countryLabel)}
+                  >
+                    <Select
+                      id="country"
+                      value={country}
+                      onChange={(value) => setCountry(value as string)}
+                      options={countryOptions}
+                      isSearchable
+                    />
+                  </Field>
+
+                  <Field
+                    id="timezone"
+                    label={t(messages.dashboard.account.timezoneLabel)}
+                  >
+                    <Select
+                      id="timezone"
+                      value={timezone}
+                      onChange={(value) => setTimezone(value as string)}
+                      options={timezoneOptions}
+                      isSearchable
+                    />
+                  </Field>
+                </div>
+
+                {profileError && (
+                  <Small color={TextColorEnum.Danger}>{profileError}</Small>
+                )}
+
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    size={ButtonSizeEnum.md}
+                    variant={ButtonVariantEnum.primary}
+                    disabled={loading || !hasProfileChanges}
+                    className="flex items-center gap-2"
+                  >
+                    {loading && <Spinner size={16} />}
+                    <span>{t(messages.common.actions.saveChanges)}</span>
+                  </Button>
+                </div>
+              </form>
+            </SectionCard>
+          </LoadingOverlay>
+        </section>
+      </Container>
+    </PageShell>
   );
 };

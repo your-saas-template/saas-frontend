@@ -39,13 +39,15 @@ export function ToastCard({ toast, onClose }: ToastCardProps) {
   return (
     <div
       className={[
-        "pointer-events-auto w-full rounded-xl border shadow-lg text-sm font-medium overflow-hidden",
+        "pointer-events-auto w-full rounded-xl border shadow-lg text-sm font-medium overflow-hidden relative",
         styles.container,
       ].join(" ")}
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="absolute z-0 bg-white top-0 left-0 w-100 h-100"></div>
+      <div className={"absolute z-1 top-0 left-0 w-100 h-100 " + styles.container }></div>
+      <div className="relative z-2 flex items-center gap-3 px-4 py-3">
         <div className="flex-1">
           <p className="leading-5">{toast.title}</p>
           {toast.description && (
