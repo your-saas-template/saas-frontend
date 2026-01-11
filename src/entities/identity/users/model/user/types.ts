@@ -7,7 +7,10 @@ import { MediaItem } from "@/entities/content/media";
 
 export interface AuthProvider {
   provider: string; // e.g. "google"
-  providerId: string; // e.g. "1234567890"
+  providerId?: string; // e.g. "1234567890"
+  email?: string;
+  addedAt?: string;
+  lastUsedAt?: string;
 }
 
 export enum UserRoleEnum {
@@ -29,6 +32,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  birthday?: string | null;
+  phone?: string | null;
+  country?: string | null;
+  timezone?: string | null;
+  emailVerified?: boolean;
+  hasPassword?: boolean;
   aiCredits?: number;
   role: UserRole;
   plan: string;
