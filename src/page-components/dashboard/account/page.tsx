@@ -1,6 +1,11 @@
 "use client";
 
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import { fromDate, getLocalTimeZone, parseDate, toCalendarDate } from "@internationalized/date";
+import { getTimeZones } from "@vvo/tzdb";
+import countries from "i18n-iso-countries";
+import enCountries from "i18n-iso-countries/langs/en.json";
+import ruCountries from "i18n-iso-countries/langs/ru.json";
 
 import { useAuth, UserApi, type User } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
@@ -24,6 +29,7 @@ import { useDeleteWithConfirm } from "@/shared/lib/hooks/useDeleteWithConfirm";
 import { PageShell } from "@/shared/layout/PageShell";
 import PasswordInput from "@/shared/ui/forms/PasswordInput";
 import { Select } from "@/shared/ui/forms/Select";
+import { DatePicker } from "@/shared/ui/forms/DatePicker";
 import {
   MediaUploadField,
   type MediaUploadSelection,
@@ -33,11 +39,23 @@ import { resolveMediaName } from "@/shared/lib/media";
 import { toast } from "@/shared/ui/toast/toast";
 import { useGoogleOAuth } from "@/features/auth/lib/useGoogleOAuth";
 
-const normalizeDateValue = (value?: string | null) => {
+countries.registerLocale(enCountries);
+countries.registerLocale(ruCountries);
+
+const localTimeZone = getLocalTimeZone();
+
+const parseDateValue = (value?: string | null) => {
+  if (!value) return undefined;
+  try {
+    return parseDate(value.slice(0, 10)).toDate(localTimeZone);
+  } catch {
+    return undefined;
+  }
+};
+
+const formatDateValue = (value?: Date | null) => {
   if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
+  return toCalendarDate(fromDate(value, localTimeZone)).toString();
 };
 
 const normalizeNullable = (value: string) => {
@@ -46,7 +64,7 @@ const normalizeNullable = (value: string) => {
 };
 
 export const DashboardAccountPage = () => {
-  const { t } = useI18n();
+  const { t, i18n } = useI18n();
   const { user, refreshUser, logout } = useAuth();
   const updateUser = UserApi.User.useUpdateUser();
   const deleteAccount = UserApi.Account.useDeleteAccount();
@@ -70,7 +88,7 @@ export const DashboardAccountPage = () => {
     useState<MediaUploadSelection | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [birthday, setBirthday] = useState("");
+  const [birthday, setBirthday] = useState<Date | undefined>(undefined);
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [timezone, setTimezone] = useState("");
@@ -118,8 +136,8 @@ export const DashboardAccountPage = () => {
     const hasAvatarChange =
       avatar?.id !== user?.avatar?.id || Boolean(avatarSelection);
     const hasProfileChange =
-      normalizeDateValue(birthday) !==
-        normalizeDateValue(account?.birthday ?? undefined) ||
+      formatDateValue(birthday) !==
+        formatDateValue(parseDateValue(account?.birthday ?? undefined)) ||
       phone !== (account?.phone ?? "") ||
       country !== (account?.country ?? "") ||
       timezone !== (account?.timezone ?? "");
@@ -169,7 +187,7 @@ export const DashboardAccountPage = () => {
 
       if (hasProfileChange) {
         await updateAccountProfile.mutateAsync({
-          birthday: birthday ? birthday : null,
+          birthday: birthday ? formatDateValue(birthday) : null,
           phone: normalizeNullable(phone),
           country: normalizeNullable(country),
           timezone: normalizeNullable(timezone),
@@ -198,7 +216,7 @@ export const DashboardAccountPage = () => {
 
   useEffect(() => {
     if (!account) return;
-    setBirthday(normalizeDateValue(account.birthday ?? undefined));
+    setBirthday(parseDateValue(account.birthday ?? undefined));
     setPhone(account.phone ?? "");
     setCountry(account.country ?? "");
     setTimezone(
@@ -210,34 +228,35 @@ export const DashboardAccountPage = () => {
   }, [account]);
 
   const countryOptions = useMemo(() => {
-    // const regions =
-    //   typeof Intl !== "undefined" && "supportedValuesOf" in Intl
-    //     ? (Intl.supportedValuesOf("region") as string[])
-    //     : [];
-    const regions: any[] = [];
-    const displayNames =
-      typeof Intl !== "undefined" && "DisplayNames" in Intl
-        ? new Intl.DisplayNames([user?.settings?.locale ?? "en"], {
-            type: "region",
-          })
-        : null;
-    const options = regions
-      .map((region) => ({
-        value: region,
-        label: displayNames?.of(region) ?? region,
+    const rawLocale = (user?.settings?.locale ?? i18n.language ?? "en")
+      .split("-")[0]
+      .toLowerCase();
+    const locale = rawLocale === "ru" || rawLocale === "en" ? rawLocale : "en";
+    const countryNames = countries.getNames(locale, { select: "official" });
+    const options = Object.entries(countryNames)
+      .map(([code, label]) => ({
+        value: code,
+        label,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
     return [{ value: "", label: t(messages.common.actions.select) }, ...options];
-  }, [t, user?.settings?.locale]);
+  }, [i18n.language, t, user?.settings?.locale]);
 
   const timezoneOptions = useMemo(() => {
-    const zones =
-      typeof Intl !== "undefined" && "supportedValuesOf" in Intl
-        ? (Intl.supportedValuesOf("timeZone") as string[])
-        : [];
-    const options = zones.map((zone) => ({ value: zone, label: zone }));
+    const rawLocale = user?.settings?.locale ?? i18n.language ?? "en";
+    const locale = rawLocale.startsWith("ru") ? "ru" : "en";
+    const displayNames =
+      typeof Intl !== "undefined" && "DisplayNames" in Intl
+        ? new Intl.DisplayNames([locale], { type: "timeZone" })
+        : null;
+    const options = getTimeZones()
+      .map((zone) => ({
+        value: zone.name,
+        label: displayNames?.of(zone.name) ?? zone.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
     return [{ value: "", label: t(messages.common.actions.select) }, ...options];
-  }, [t]);
+  }, [i18n.language, t, user?.settings?.locale]);
 
   const connectedCount = authProviders.length;
   const hasEmailProvider = authProviders.some(
@@ -250,8 +269,8 @@ export const DashboardAccountPage = () => {
     const hasAvatarChange =
       avatar?.id !== user?.avatar?.id || Boolean(avatarSelection);
     const hasProfileChange =
-      normalizeDateValue(birthday) !==
-        normalizeDateValue(account?.birthday ?? undefined) ||
+      formatDateValue(birthday) !==
+        formatDateValue(parseDateValue(account?.birthday ?? undefined)) ||
       phone !== (account?.phone ?? "") ||
       country !== (account?.country ?? "") ||
       timezone !== (account?.timezone ?? "");
@@ -487,11 +506,12 @@ export const DashboardAccountPage = () => {
                       id="birthday"
                       label={t(messages.dashboard.account.birthdayLabel)}
                     >
-                      <Input
+                      <DatePicker
                         id="birthday"
-                        type="date"
                         value={birthday}
-                        onChange={(event) => setBirthday(event.target.value)}
+                        onChange={setBirthday}
+                        placeholder={t(messages.dashboard.account.birthdayLabel)}
+                        language={i18n.language}
                       />
                     </Field>
 
@@ -519,6 +539,7 @@ export const DashboardAccountPage = () => {
                         value={country}
                         onChange={(value) => setCountry(value as string)}
                         options={countryOptions}
+                        isSearchable
                       />
                     </Field>
 
@@ -531,6 +552,7 @@ export const DashboardAccountPage = () => {
                         value={timezone}
                         onChange={(value) => setTimezone(value as string)}
                         options={timezoneOptions}
+                        isSearchable
                       />
                     </Field>
                   </div>
