@@ -264,7 +264,8 @@
     "themeToggleToLight": "Переключить на светлую тему",
     "aiCredits": "AI-кредиты — это баланс для функций на базе ИИ.",
     "plan": "Текущий тариф пользователя",
-    "role": "Роль пользователя"
+    "role": "Роль пользователя",
+    "profileSettings": "Настройки профиля"
   },
   "landing": {
     "title": "Главная",
@@ -488,18 +489,25 @@
         "analyticsTraffic": "Трафик",
         "subscription": "Оплаты",
         "feedback": "Обратная связь",
-        "email": "Email"
+        "email": "Email",
+        "account": "Аккаунт"
       }
     },
     "account": {
       "title": "Аккаунт",
       "subtitle": "Управляйте профилем и личными настройками.",
+      "menuSettings": "Настройки аккаунта",
+      "preferencesTitle": "Предпочтения",
+      "preferencesDescription": "Настройте интерфейс и региональные параметры.",
       "profileTitle": "Профиль",
       "profileDescription": "Базовая информация о вашем аккаунте.",
       "birthdayLabel": "Дата рождения",
       "phoneLabel": "Телефон",
       "countryLabel": "Страна",
       "timezoneLabel": "Часовой пояс",
+      "dateTimeFormatLabel": "Формат даты и времени",
+      "dateTimeFormatDescription": "Выберите формат отображения даты и времени.",
+      "comingSoon": "Скоро будет доступно",
       "interfaceTitle": "Интерфейс",
       "interfaceDescription": "Настройте внешний вид и поведение приложения.",
       "securityTitle": "Безопасность",
@@ -542,6 +550,12 @@
       "changeEmailTitle": "Сменить email",
       "changeEmailDescription": "Отправим код для подтверждения нового email.",
       "newEmailPlaceholder": "Новый email",
+      "nav": {
+        "profile": "Профиль",
+        "preferences": "Предпочтения",
+        "security": "Безопасность",
+        "danger": "Опасная зона"
+      },
       "delete": {
         "title": "Удаление аккаунта",
         "description": "Вы можете навсегда удалить свой аккаунт и все связанные с ним данные.",

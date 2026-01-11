@@ -1,5 +1,5 @@
-import { DashboardAccountPage } from "@/page-components/dashboard/account";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return <DashboardAccountPage />;
+export default function DashboardAccountRedirectPage() {
+  redirect("/dashboard/account/profile");
 }

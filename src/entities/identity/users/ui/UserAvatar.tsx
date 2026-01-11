@@ -2,7 +2,9 @@
 
 import type { User } from "@/entities/identity";
 import * as React from "react";
+import clsx from "clsx";
 
+export type UserAvatarVariant = "header" | "sidebar";
 
 export type UserAvatarProps = {
   user?: User | null;
@@ -12,6 +14,7 @@ export type UserAvatarProps = {
   className?: string;
   /** aria-label override for accessibility. */
   "aria-label"?: string;
+  variant?: UserAvatarVariant;
 };
 
 /** Build initials from name or email. */
@@ -31,18 +34,27 @@ export function UserAvatar({
   user,
   fallback = "U",
   className,
+  variant = "header",
   ...rest
 }: UserAvatarProps) {
   const label =
     rest["aria-label"] ||
     (user?.name || user?.email ? `User: ${user?.name || user?.email}` : "User");
+  const sizeClassName =
+    variant === "sidebar"
+      ? "min-h-12 min-w-12 h-12 w-12"
+      : "min-h-10 min-w-10 h-10 w-10";
   
   if (user?.avatar) {
     return (
       <img
         src={user?.avatar.url}
         alt={user?.avatar.name}
-        className="min-h-10 min-w-10 h-10 w-10 object-cover rounded-full inline-flex select-none items-center justify-center text-sm font-semibold uppercase bg-primary text-onPrimary"
+        className={clsx(
+          sizeClassName,
+          "object-cover rounded-full inline-flex select-none items-center justify-center text-sm font-semibold uppercase bg-primary text-onPrimary",
+          className,
+        )}
       />
     );
   }
@@ -52,7 +64,8 @@ export function UserAvatar({
       role="img"
       aria-label={label}
       className={[
-        "min-h-10 min-w-10 rounded-full",
+        sizeClassName,
+        "rounded-full",
         "inline-flex select-none items-center justify-center",
         "text-sm font-semibold uppercase",
         "bg-primary text-onPrimary",

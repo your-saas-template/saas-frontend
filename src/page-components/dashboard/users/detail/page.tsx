@@ -137,7 +137,7 @@ export const DashboardUserDetailPage = () => {
 
   useEffect(() => {
     if (!authLoading && currentUser && userId && currentUser.id === userId) {
-      router.replace("/dashboard/account");
+      router.replace("/dashboard/account/profile");
     }
   }, [authLoading, currentUser, userId, router]);
 

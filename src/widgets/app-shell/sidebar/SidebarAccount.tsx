@@ -4,6 +4,9 @@ import clsx from "clsx";
 import { useRouter } from "next/navigation";
 
 import { useAuth, UserPreview } from "@/entities/identity";
+import Tooltip, { TooltipPosition } from "@/shared/ui/Tooltip";
+import { messages } from "@/i18n/messages";
+import { useI18n } from "@/shared/lib/i18n";
 
 type SidebarAccountProps = {
   isExpanded: boolean;
@@ -18,17 +21,18 @@ export const SidebarAccount = ({
 }: SidebarAccountProps) => {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
-    router.push("/dashboard/account");
+    router.push("/dashboard/account/profile");
     if (onAfterNavigate) onAfterNavigate();
   };
 
   const showExpandedContent = variant === "desktop" ? isExpanded : true;
   const hideText = variant === "desktop" && !isExpanded;
 
-  return (
+  const content = (
     <div
       className="border-b border-border px-3 py-3 cursor-pointer"
       onClick={handleClick}
@@ -53,5 +57,14 @@ export const SidebarAccount = ({
         />
       </div>
     </div>
+  );
+
+  return (
+    <Tooltip
+      content={t(messages.tooltips.profileSettings)}
+      placement={TooltipPosition.right}
+    >
+      {content}
+    </Tooltip>
   );
 };

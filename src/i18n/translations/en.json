@@ -265,7 +265,8 @@
     "themeToggleToLight": "Switch to light theme",
     "aiCredits": "AI credits represent available balance for AI-powered features.",
     "plan": "User's current plan",
-    "role": "User role"
+    "role": "User role",
+    "profileSettings": "Profile settings"
   },
   "landing": {
     "title": "Home",
@@ -489,18 +490,25 @@
         "analyticsTraffic": "Traffic",
         "subscription": "Billing",
         "feedback": "Feedback",
-        "email": "Email"
+        "email": "Email",
+        "account": "Account"
       }
     },
     "account": {
       "title": "Account",
       "subtitle": "Manage your profile and personal settings.",
+      "menuSettings": "Account settings",
+      "preferencesTitle": "Preferences",
+      "preferencesDescription": "Tune the interface and regional settings.",
       "profileTitle": "Profile",
       "profileDescription": "Basic information about your account.",
       "birthdayLabel": "Birthday",
       "phoneLabel": "Phone number",
       "countryLabel": "Country",
       "timezoneLabel": "Time zone",
+      "dateTimeFormatLabel": "Date & time format",
+      "dateTimeFormatDescription": "Choose how dates and times are displayed.",
+      "comingSoon": "Coming soon",
       "interfaceTitle": "Interface",
       "interfaceDescription": "Customize the app’s look and behavior.",
       "securityTitle": "Security",
@@ -543,6 +551,12 @@
       "changeEmailTitle": "Change email",
       "changeEmailDescription": "Send a code to confirm your new email address.",
       "newEmailPlaceholder": "New email address",
+      "nav": {
+        "profile": "Profile",
+        "preferences": "Preferences",
+        "security": "Security",
+        "danger": "Danger zone"
+      },
       "delete": {
         "title": "Delete account",
         "description": "You can permanently delete your account and all related data.",

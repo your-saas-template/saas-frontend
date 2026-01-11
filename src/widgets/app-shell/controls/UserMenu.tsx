@@ -52,7 +52,7 @@ export default function UserMenu() {
             // keep hover behavior consistent with previous version
             style={{ filter: open ? "brightness(0.95)" : undefined }}
           >
-            <UserAvatar user={user} className="h-full w-full" />
+            <UserAvatar user={user} className="h-full w-full" variant="header" />
           </button>
 
           {/* dropdown */}
@@ -79,6 +79,15 @@ export default function UserMenu() {
                 onClick={() => setOpen(false)}
               >
                 {t(messages.dashboard.sidebar.items.dashboard)}
+              </Link>
+
+              <Link
+                href="/dashboard/account/profile"
+                role="menuitem"
+                className="block w-full text-left px-3 py-2 text-sm whitespace-nowrap text-text transition-colors hover:bg-primaryHover hover:text-onPrimary active:bg-primary active:text-onPrimary"
+                onClick={() => setOpen(false)}
+              >
+                {t(messages.dashboard.account.menuSettings)}
               </Link>
 
               <button
