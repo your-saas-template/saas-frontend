@@ -92,7 +92,7 @@ export function Select({
         isDisabled={isDisabled}
         isInvalid={invalid}
         selectionMode={isMulti ? "multiple" : "single"}
-        selectedKey={selectedKey ?? undefined}
+        selectedKey={selectedKey}
         selectedKeys={selectedKeys}
         onOpenChange={(isOpen) => {
           if (isOpen) setSearchValue("");

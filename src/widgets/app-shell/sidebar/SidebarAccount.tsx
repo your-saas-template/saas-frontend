@@ -32,7 +32,7 @@ export const SidebarAccount = ({
   const showExpandedContent = variant === "desktop" ? isExpanded : true;
   const hideText = variant === "desktop" && !isExpanded;
 
-  const content = (
+  return (
     <div
       className="border-b border-border px-3 py-3 cursor-pointer"
       onClick={handleClick}
@@ -57,14 +57,5 @@ export const SidebarAccount = ({
         />
       </div>
     </div>
-  );
-
-  return (
-    <Tooltip
-      content={t(messages.tooltips.profileSettings)}
-      placement={TooltipPosition.right}
-    >
-      {content}
-    </Tooltip>
   );
 };

@@ -80,12 +80,6 @@ export function Sidebar({
         canView: subscriptionsPermissions.own.view,
       },
       {
-        href: "/dashboard/account/profile",
-        label: messages.dashboard.sidebar.items.account,
-        icon: User,
-        canView: true,
-      },
-      {
         href: "/dashboard/email",
         label: messages.dashboard.sidebar.items.email,
         icon: Mail,

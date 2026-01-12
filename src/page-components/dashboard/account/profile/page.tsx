@@ -33,7 +33,7 @@ countries.registerLocale(enCountries as any);
 
 const normalizeNullable = (value: string) => {
   const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
+  return trimmed.length ? trimmed : "";
 };
 
 export const DashboardAccountProfilePage = () => {
@@ -160,10 +160,8 @@ export const DashboardAccountProfilePage = () => {
     const placeholder = { value: "", label: t(messages.common.actions.select) };
 
     const names =
-      countries.getNames("en", { select: "official" }) ?? ({} as Record<
-        string,
-        string
-      >);
+      countries.getNames("en", { select: "official" }) ??
+      ({} as Record<string, string>);
 
     const options = Object.entries(names)
       .map(([code, label]) => ({ value: code, label }))
@@ -211,123 +209,108 @@ export const DashboardAccountProfilePage = () => {
   ]);
 
   return (
-    <PageShell>
-      <Container>
-        <PageHeader
-          title={t(messages.dashboard.account.profileTitle)}
-          subtitle={t(messages.dashboard.account.profileDescription)}
-          subtitleColor={TextColorEnum.Secondary}
-        />
+    <LoadingOverlay
+      loading={loading || accountQuery.isLoading}
+      className="rounded-xl"
+    >
+      <SectionCard
+        title={t(messages.dashboard.account.profileTitle)}
+        description={t(messages.dashboard.account.profileDescription)}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field id="name" label={t(messages.validation.nameLabel)}>
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={t(messages.validation.namePlaceholder)}
+            />
+          </Field>
 
-        <section className="flex flex-col gap-8">
-          <LoadingOverlay
-            loading={loading || accountQuery.isLoading}
-            className="rounded-xl"
-          >
-            <SectionCard
-              title={t(messages.dashboard.account.profileTitle)}
-              description={t(messages.dashboard.account.profileDescription)}
+          <MediaUploadField
+            label={t(messages.media.fields.avatarLabel)}
+            savedMedia={avatar}
+            onSavedChange={(media) => {
+              setAvatar(media);
+              setAvatarSelection(null);
+            }}
+            onSelectionChange={(selection) => {
+              setAvatarSelection(selection);
+              setUploadError(null);
+            }}
+            error={uploadError}
+            disabled={loading || uploadMedia.isPending}
+            isUploading={uploadMedia.isPending}
+          />
+
+          <div className="space-y-1">
+            <Small className="uppercase tracking-wide font-medium">
+              {t(messages.auth.email)}
+            </Small>
+            <P className="text-sm font-medium">{user?.email}</P>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field id="phone" label={t(messages.dashboard.account.phoneLabel)}>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder="+12025550123"
+              />
+            </Field>
+
+            <div className="hidden md:block" />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field
+              id="country"
+              label={t(messages.dashboard.account.countryLabel)}
             >
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Field id="name" label={t(messages.validation.nameLabel)}>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder={t(messages.validation.namePlaceholder)}
-                  />
-                </Field>
+              <Select
+                id="country"
+                value={country}
+                onChange={(value) => setCountry(value as string)}
+                options={countryOptions}
+                isSearchable
+              />
+            </Field>
 
-                <MediaUploadField
-                  label={t(messages.media.fields.avatarLabel)}
-                  savedMedia={avatar}
-                  onSavedChange={(media) => {
-                    setAvatar(media);
-                    setAvatarSelection(null);
-                  }}
-                  onSelectionChange={(selection) => {
-                    setAvatarSelection(selection);
-                    setUploadError(null);
-                  }}
-                  error={uploadError}
-                  disabled={loading || uploadMedia.isPending}
-                  isUploading={uploadMedia.isPending}
-                />
+            <Field
+              id="timezone"
+              label={t(messages.dashboard.account.timezoneLabel)}
+            >
+              <Select
+                id="timezone"
+                value={timezone}
+                onChange={(value) => setTimezone(value as string)}
+                options={timezoneOptions}
+                isSearchable
+              />
+            </Field>
+          </div>
 
-                <div className="space-y-1">
-                  <Small className="uppercase tracking-wide font-medium">
-                    {t(messages.auth.email)}
-                  </Small>
-                  <P className="text-sm font-medium">{user?.email}</P>
-                </div>
+          {profileError && (
+            <Small color={TextColorEnum.Danger}>{profileError}</Small>
+          )}
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field
-                    id="phone"
-                    label={t(messages.dashboard.account.phoneLabel)}
-                  >
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(event) => setPhone(event.target.value)}
-                      placeholder="+12025550123"
-                    />
-                  </Field>
-
-                  <div className="hidden md:block" />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field
-                    id="country"
-                    label={t(messages.dashboard.account.countryLabel)}
-                  >
-                    <Select
-                      id="country"
-                      value={country}
-                      onChange={(value) => setCountry(value as string)}
-                      options={countryOptions}
-                      isSearchable
-                    />
-                  </Field>
-
-                  <Field
-                    id="timezone"
-                    label={t(messages.dashboard.account.timezoneLabel)}
-                  >
-                    <Select
-                      id="timezone"
-                      value={timezone}
-                      onChange={(value) => setTimezone(value as string)}
-                      options={timezoneOptions}
-                      isSearchable
-                    />
-                  </Field>
-                </div>
-
-                {profileError && (
-                  <Small color={TextColorEnum.Danger}>{profileError}</Small>
-                )}
-
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    size={ButtonSizeEnum.md}
-                    variant={ButtonVariantEnum.primary}
-                    disabled={loading || !hasProfileChanges}
-                    className="flex items-center gap-2"
-                  >
-                    {loading && <Spinner size={16} />}
-                    <span>{t(messages.common.actions.saveChanges)}</span>
-                  </Button>
-                </div>
-              </form>
-            </SectionCard>
-          </LoadingOverlay>
-        </section>
-      </Container>
-    </PageShell>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              size={ButtonSizeEnum.md}
+              variant={ButtonVariantEnum.primary}
+              disabled={loading || !hasProfileChanges}
+              className="flex items-center gap-2"
+            >
+              {loading && <Spinner size={16} />}
+              <span>{t(messages.common.actions.saveChanges)}</span>
+            </Button>
+          </div>
+        </form>
+      </SectionCard>
+    </LoadingOverlay>
   );
 };

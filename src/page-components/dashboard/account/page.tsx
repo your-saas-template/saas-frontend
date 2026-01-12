@@ -42,7 +42,7 @@ const normalizeDateValue = (value?: string | null) => {
 
 const normalizeNullable = (value: string) => {
   const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
+  return trimmed.length ? trimmed : "";
 };
 
 export const DashboardAccountPage = () => {
