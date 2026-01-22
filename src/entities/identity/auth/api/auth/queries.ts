@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/entities/identity";
+import { Auth } from "@/entities/identity";
 import {
   OauthLoginRequest,
   RegisterRequest,
@@ -16,7 +16,7 @@ import { authService } from "./service";
 
 // Register
 export const useRegister = () => {
-  const { login: setAuth } = useAuth();
+  const { login: setAuth } = Auth.useAuth();
   return useMutation<AuthResponse, Error, RegisterRequest>({
     mutationFn: async (payload) => {
       const { data } = await authService.register(payload);
@@ -36,7 +36,7 @@ export const useRegister = () => {
 
 // Login
 export const useLogin = () => {
-  const { login: setAuth } = useAuth();
+  const { login: setAuth } = Auth.useAuth();
   return useMutation<AuthResponse, Error, LoginRequest>({
     mutationFn: async (payload) => {
       const { data } = await authService.login(payload);
@@ -58,7 +58,7 @@ export const useOauthAuthorize = (provider: string) => {
 
 // OAuth login (idToken or code)
 export const useOauthLogin = (provider: string) => {
-  const { login: setAuth } = useAuth();
+  const { login: setAuth } = Auth.useAuth();
   return useMutation<AuthResponse, Error, OauthLoginRequest>({
     mutationFn: async (payload) => {
       const { data } = await authService.oauthLogin(provider, payload);
@@ -70,7 +70,7 @@ export const useOauthLogin = (provider: string) => {
 
 // Refresh access token (reads HttpOnly refresh cookie on backend)
 export const useRefresh = () => {
-  const { refreshUser } = useAuth();
+  const { refreshUser } = Auth.useAuth();
   return useMutation<RefreshResponse, Error>({
     mutationFn: async () => {
       const res = await fetch("/api/auth/refresh", {
@@ -90,7 +90,7 @@ export const useRefresh = () => {
 
 // Logout
 export const useLogout = () => {
-  const { logout } = useAuth();
+  const { logout } = Auth.useAuth();
   return useMutation<void, Error>({
     mutationFn: async () => {
       await fetch("/api/auth/logout", {

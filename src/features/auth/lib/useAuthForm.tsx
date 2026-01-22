@@ -11,7 +11,7 @@ import { useI18n } from "@/shared/lib/i18n";
 import { ENV } from "@/shared/config";
 import { useGoogleOAuth } from "@/features/auth/lib/useGoogleOAuth";
 import { useTheme } from "@/shared/lib/theme";
-import { OAuthIntent, UserApi } from "@/entities/identity";
+import { Auth, UserApi } from "@/entities/identity";
 import { toast } from "@/shared/ui/toast/toast";
 
 /** Parse "i18n.key|{json}" into { key, params } */
@@ -89,7 +89,7 @@ type UseAuthFormOptions<TValues extends Record<string, any>> = {
   redirectTo?: string | null;
   googleEnabled?: boolean;
   /** OAuth intent passed to backend: "login" or "register" */
-  oauthIntent?: OAuthIntent;
+  oauthIntent?: Auth.OAuthIntent;
 };
 
 /**
@@ -185,7 +185,7 @@ export function useAuthForm<TValues extends Record<string, any>>(
                 redirect_uri: "postmessage",
                 locale,
                 theme,
-                intent: opts.oauthIntent ?? OAuthIntent.login,
+                intent: opts.oauthIntent ?? Auth.OAuthIntent.login,
               });
               if (opts.successToastKey) {
                 toast.success(t(opts.successToastKey));

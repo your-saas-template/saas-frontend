@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAuth } from "@/entities/identity";
+import { Auth } from "@/entities/identity";
 import type { Permissions } from "@/shared/types/api/permissions";
 
 export function useAppPermissions(): Permissions {
-  const { user } = useAuth();
+  const { user } = Auth.useAuth();
   const raw = user?.permissions as Permissions | undefined;
 
   return useMemo<Permissions>(() => {

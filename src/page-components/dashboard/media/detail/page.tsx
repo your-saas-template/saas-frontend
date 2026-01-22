@@ -4,11 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { MediaApi, type MediaItem } from "@/entities/content/media";
-import {
-  useAuth,
-  useAppPermissions,
-  usePermissionGuard,
-} from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 
@@ -36,8 +32,8 @@ export const DashboardMediaDetailPage = () => {
   const router = useRouter();
   const mediaId = Array.isArray(params?.id) ? params?.id[0] : params?.id;
 
-  const { loading: authLoading } = useAuth();
-  const { media: mediaPermissions } = useAppPermissions();
+  const { loading: authLoading } = Auth.useAuth();
+  const { media: mediaPermissions } = Users.useAppPermissions();
 
   const canViewMedia = mediaPermissions.any.view || mediaPermissions.own.view;
   const canEditMedia =
@@ -45,7 +41,7 @@ export const DashboardMediaDetailPage = () => {
   const canDeleteMedia =
     mediaPermissions.any.delete || mediaPermissions.own.delete;
 
-  const { canAccess } = usePermissionGuard({
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: canViewMedia,
   });
 

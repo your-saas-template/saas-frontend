@@ -3,14 +3,7 @@
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import {
-  useAuth,
-  UserApi,
-  useAppPermissions,
-  usePermissionGuard,
-  type User,
-  UserRoleEnum,
-} from "@/entities/identity";
+import { Auth, UserApi, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import type { MediaItem } from "@/entities/content/media";
@@ -51,13 +44,13 @@ export const DashboardUserDetailPage = () => {
   const params = useParams<{ id: string }>();
   const userId = Array.isArray(params?.id) ? params?.id[0] : params?.id;
 
-  const { user: currentUser, loading: authLoading } = useAuth();
+  const { user: currentUser, loading: authLoading } = Auth.useAuth();
   const {
     users: usersPermissions,
     subscriptions: subscriptionPermissions,
     payments,
     bonus,
-  } = useAppPermissions();
+  } = Users.useAppPermissions();
 
   const canViewAnyUsers = usersPermissions.any.view;
   const canEditAnyUsers = usersPermissions.any.edit;
@@ -68,7 +61,7 @@ export const DashboardUserDetailPage = () => {
   const canViewBonus = bonus.history.any.view;
   const canAdjustBonus = bonus.adjust;
 
-  const { canAccess } = usePermissionGuard({
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: canViewAnyUsers,
   });
 
@@ -110,7 +103,7 @@ export const DashboardUserDetailPage = () => {
   const roleLabel = useMemo(() => {
     if (!viewedUser?.role?.key)
       return viewedUser?.role?.name ?? viewedUser?.role?.key;
-    return viewedUser.role.key === UserRoleEnum.ADMIN
+    return viewedUser.role.key === Users.UserRoleEnum.ADMIN
       ? t(messages.dashboard.users.role.admin)
       : t(messages.dashboard.users.role.user);
   }, [t, viewedUser?.role?.key, viewedUser?.role?.name]);
@@ -145,7 +138,7 @@ export const DashboardUserDetailPage = () => {
     modalProps: deleteModalProps,
     requestDelete: requestUserDelete,
     isPending: deletePending,
-  } = useDeleteWithConfirm<User>({
+  } = useDeleteWithConfirm<Users.User>({
     canDelete: canDeleteAnyUsers,
     getLabel: (u) =>
       u.name && u.name.trim().length > 0 ? u.name.trim() : u.email,

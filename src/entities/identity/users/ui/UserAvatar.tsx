@@ -1,13 +1,13 @@
 "use client";
 
-import type { User } from "@/entities/identity";
+import type { Users } from "@/entities/identity";
 import * as React from "react";
 import clsx from "clsx";
 
 export type UserAvatarVariant = "header" | "sidebar";
 
 export type UserAvatarProps = {
-  user?: User | null;
+  user?: Users.User | null;
   /** Fallback initials when user is missing. */
   fallback?: string;
   /** Extra classes for container. */
@@ -18,7 +18,10 @@ export type UserAvatarProps = {
 };
 
 /** Build initials from name or email. */
-export function getUserInitials(user?: User | null, fallback = "U"): string {
+export function getUserInitials(
+  user?: Users.User | null,
+  fallback = "U",
+): string {
   if (!user) return fallback.toUpperCase();
   const src = user.name?.trim() || user.email || "";
   if (!src) return fallback.toUpperCase();

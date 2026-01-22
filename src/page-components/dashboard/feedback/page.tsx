@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 
-import { useAuth, useAppPermissions, usePermissionGuard } from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 
@@ -20,8 +20,8 @@ import { sortEnum } from "@/shared/types/api/pagination";
 
 export const DashboardFeedbackPage = () => {
   const { t } = useI18n();
-  const { loading: authLoading } = useAuth();
-  const { feedback: feedbackPermissions } = useAppPermissions();
+  const { loading: authLoading } = Auth.useAuth();
+  const { feedback: feedbackPermissions } = Users.useAppPermissions();
 
   const [page, setPage] = useState<number>(1);
   const [sort, setSort] = useState<sortEnum>(sortEnum.desc);
@@ -32,7 +32,7 @@ export const DashboardFeedbackPage = () => {
   });
 
   const canView = !!feedbackPermissions?.view;
-  const { canAccess } = usePermissionGuard({
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: canView,
   });
 

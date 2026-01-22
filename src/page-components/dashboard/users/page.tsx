@@ -3,13 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  useAuth,
-  UserApi,
-  useAppPermissions,
-  usePermissionGuard,
-  type User,
-} from "@/entities/identity";
+import { Auth, UserApi, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import {
@@ -24,7 +18,6 @@ import { PageShell } from "@/shared/layout/PageShell";
 
 import Field from "@/shared/ui/forms/Field";
 import { ItemCard } from "@/shared/ui/list/ItemCard";
-import { UserPreview } from "@/entities/identity";
 import { DeleteModal } from "@/shared/ui/modal/DeleteModal";
 
 import { usePageSize } from "@/shared/lib/hooks/usePageSize";
@@ -37,8 +30,8 @@ import { toast } from "@/shared/ui/toast/toast";
 export const DashboardUsersPage = () => {
   const { t } = useI18n();
   const router = useRouter();
-  const { loading: authLoading } = useAuth();
-  const { users: usersPermissions } = useAppPermissions();
+  const { loading: authLoading } = Auth.useAuth();
+  const { users: usersPermissions } = Users.useAppPermissions();
 
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>("");
@@ -53,7 +46,7 @@ export const DashboardUsersPage = () => {
   const canEditAnyUsers = usersPermissions.any.edit;
   const canDeleteAnyUsers = usersPermissions.any.delete;
 
-  const { canAccess } = usePermissionGuard({
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: canViewAnyUsers,
   });
 
@@ -104,7 +97,7 @@ export const DashboardUsersPage = () => {
   const deleteUserMutation = UserApi.User.useDeleteUser();
 
   const { requestDelete, modalProps: deleteModalProps } =
-    useDeleteWithConfirm<User>({
+    useDeleteWithConfirm<Users.User>({
       canDelete: canDeleteAnyUsers,
       getLabel: (u) =>
         u.name && u.name.trim().length > 0 ? u.name.trim() : u.email,
@@ -144,7 +137,7 @@ export const DashboardUsersPage = () => {
           subtitle={t(messages.dashboard.users.list.subtitle)}
         />
 
-        <ListSection<User>
+        <ListSection<Users.User>
           canView={canViewAnyUsers}
           authLoading={authLoading}
           isError={isError}
@@ -192,7 +185,7 @@ export const DashboardUsersPage = () => {
               onDelete={() => requestDelete(user)}
               actionsSide="right"
             >
-              <UserPreview user={user} showEmail showPlan showRoleBadge />
+              <Users.UserPreview user={user} showEmail showPlan showRoleBadge />
             </ItemCard>
           )}
           getItemKey={(user) => user.id}

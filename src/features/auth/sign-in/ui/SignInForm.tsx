@@ -5,7 +5,7 @@ import { z } from "zod";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import { Button, ButtonSizeEnum } from "@/shared/ui/Button";
-import { UserApi, OAuthIntent } from "@/entities/identity";
+import { Auth, UserApi } from "@/entities/identity";
 import { loginSchema } from "@/entities/identity/auth/api/auth/validation";
 
 import { AuthView } from "@/widgets/auth/auth-view";
@@ -52,7 +52,7 @@ export const SignInForm = () => {
     successToastKey: messages.notifications.auth.loginSuccess,
     redirectTo: "/dashboard",
     googleEnabled: true,
-    oauthIntent: OAuthIntent.login,
+    oauthIntent: Auth.OAuthIntent.login,
   });
 
   const isBusy = isLoginPending || isOauthBusy;
