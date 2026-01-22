@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  useAuth,
-  useAppPermissions,
-  usePermissionGuard,
-} from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import {
@@ -34,12 +30,12 @@ import { toast } from "@/shared/ui/toast/toast";
 
 export const DashboardSubscriptionPage = () => {
   const { t } = useI18n();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = Auth.useAuth();
   const {
     subscriptions: subscriptionPermissions,
     payments: paymentPermissions,
     bonus,
-  } = useAppPermissions();
+  } = Users.useAppPermissions();
   const [globalLoading, setGlobalLoading] = useState(false);
 
   const canViewSubscriptions = subscriptionPermissions.own.view;
@@ -49,7 +45,7 @@ export const DashboardSubscriptionPage = () => {
 
   const canAccessPage = canViewSubscriptions || canViewPayments || canViewBonus;
 
-  const { canAccess } = usePermissionGuard({ canAccess: canAccessPage });
+  const { canAccess } = Users.usePermissionGuard({ canAccess: canAccessPage });
   const canShowPage = canAccess || authLoading;
 
   const { data: subscriptionResponse, isLoading: subscriptionLoading } =

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/entities/identity";
+import { Auth } from "@/entities/identity";
 
 type UsePermissionGuardOptions = {
   canAccess: boolean;
@@ -19,7 +19,7 @@ export function usePermissionGuard(
 ): UsePermissionGuardResult {
   const { canAccess, redirectTo = "/dashboard" } = options;
   const router = useRouter();
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading } = Auth.useAuth();
 
   useEffect(() => {
     if (!authLoading && !canAccess) {

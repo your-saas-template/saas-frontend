@@ -8,7 +8,7 @@ import {
   type EmailCategory,
   type SendEmailRequest,
 } from "@/entities/communication/email";
-import type { User } from "@/entities/identity";
+import type { Users } from "@/entities/identity";
 import { Languages } from "@/i18n/translations";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
@@ -31,7 +31,7 @@ type SendEmailModalProps = {
   subjectKey?: string;
   category?: EmailCategory;
   defaultData?: Record<string, unknown>;
-  users?: User[];
+  users?: Users.User[];
   canSendOne: boolean;
   canBroadcast: boolean;
 };

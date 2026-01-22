@@ -24,7 +24,7 @@ import { StatCard } from "@/widgets/analytics/overview";
 import { LineChart } from "@/shared/ui/charts/LineChart";
 import { BarChart } from "@/shared/ui/charts/BarChart";
 import { DatePicker, DateRange } from "@/shared/ui/forms/DatePicker";
-import { useAppPermissions, usePermissionGuard } from "@/entities/identity";
+import { Users } from "@/entities/identity";
 
 
 export const DashboardBusinessAnalyticsPage = () => {
@@ -415,8 +415,8 @@ export const DashboardBusinessAnalyticsPage = () => {
   );
 
   const { analitycs_business: analitycsBusinessPermissions } =
-    useAppPermissions();
-  const { canAccess } = usePermissionGuard({
+    Users.useAppPermissions();
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: analitycsBusinessPermissions.view,
   });
   if (!canAccess) {

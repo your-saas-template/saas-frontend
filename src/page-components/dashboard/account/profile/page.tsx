@@ -5,7 +5,7 @@ import { getTimeZones } from "@vvo/tzdb";
 import countries from "i18n-iso-countries";
 import enCountries from "i18n-iso-countries/langs/en.json";
 
-import { useAuth, UserApi } from "@/entities/identity";
+import { Auth, UserApi } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import type { MediaItem } from "@/entities/content/media";
@@ -50,7 +50,7 @@ function parseDate(value?: string | null) {
 
 export const DashboardAccountProfilePage = () => {
   const { t } = useI18n();
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser } = Auth.useAuth();
 
   const updateUser = UserApi.User.useUpdateUser();
   const accountQuery = UserApi.Account.useAccountMe();

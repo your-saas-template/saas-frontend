@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 
-import { useAuth, UserPreview } from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import Tooltip, { TooltipPosition } from "@/shared/ui/Tooltip";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
@@ -20,7 +20,7 @@ export const SidebarAccount = ({
   onAfterNavigate,
 }: SidebarAccountProps) => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = Auth.useAuth();
   const { t } = useI18n();
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -47,7 +47,7 @@ export const SidebarAccount = ({
             : "justify-start",
         )}
       >
-        <UserPreview
+        <Users.UserPreview
           user={user ?? null}
           showEmail={!!user?.email && !!user?.name}
           showPlan

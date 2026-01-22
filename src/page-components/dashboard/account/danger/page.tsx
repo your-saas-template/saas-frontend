@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, UserApi, type User } from "@/entities/identity";
+import { Auth, UserApi, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import { DeleteModal } from "@/shared/ui/modal/DeleteModal";
@@ -10,13 +10,13 @@ import { toast } from "@/shared/ui/toast/toast";
 
 export const DashboardAccountDangerPage = () => {
   const { t } = useI18n();
-  const { user, logout } = useAuth();
+  const { user, logout } = Auth.useAuth();
   const deleteAccount = UserApi.Account.useDeleteAccount();
 
   const {
     requestDelete: requestAccountDelete,
     modalProps: accountDeleteModalProps,
-  } = useDeleteWithConfirm<User>({
+  } = useDeleteWithConfirm<Users.User>({
     canDelete: true,
     getLabel: () => "DELETE",
     onDelete: async () => {
@@ -38,7 +38,7 @@ export const DashboardAccountDangerPage = () => {
         titleKey={messages.dashboard.account.delete.title}
         descriptionKey={messages.dashboard.account.delete.description}
         buttonLabelKey={messages.dashboard.account.delete.buttonLabel}
-        onClick={() => user && requestAccountDelete(user as User)}
+        onClick={() => user && requestAccountDelete(user as Users.User)}
       />
 
       <DeleteModal

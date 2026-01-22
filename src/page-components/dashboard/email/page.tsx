@@ -9,11 +9,7 @@ import {
   type MarketingTemplate,
   type SystemTemplate,
 } from "@/entities/communication/email";
-import {
-  UserApi,
-  useAppPermissions,
-  usePermissionGuard,
-} from "@/entities/identity";
+import { UserApi, Users } from "@/entities/identity";
 import { sortEnum } from "@/shared/types/api/pagination";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
@@ -47,9 +43,9 @@ const getTemplateKey = (tpl: SystemTemplate | MarketingTemplate) => {
 
 export const DashboardEmailPage = () => {
   const { t } = useI18n();
-  const { email: emailPermissions } = useAppPermissions();
+  const { email: emailPermissions } = Users.useAppPermissions();
   const canAccess = emailPermissions.one || emailPermissions.broadcast;
-  const { canAccess: allowed } = usePermissionGuard({ canAccess });
+  const { canAccess: allowed } = Users.usePermissionGuard({ canAccess });
 
   const {
     data: templateList,

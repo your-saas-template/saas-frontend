@@ -18,7 +18,7 @@ import {
   Users2,
 } from "lucide-react";
 
-import { useAuth } from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import { Button, ButtonSizeEnum, ButtonVariantEnum } from "@/shared/ui/Button";
@@ -28,7 +28,6 @@ import { SidebarAccount } from "./SidebarAccount";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarMobileDrawer } from "./SidebarMobileDrawer";
 import { NavItem, SidebarProps } from "./types";
-import { useAppPermissions } from "@/entities/identity";
 
 export function Sidebar({
   onLogoutClick,
@@ -37,7 +36,7 @@ export function Sidebar({
 }: SidebarProps) {
   const { t } = useI18n();
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout } = Auth.useAuth();
   const {
     users: usersPermissions,
     feedback: feedbackPermissions,
@@ -45,7 +44,7 @@ export function Sidebar({
     analitycs_traffic: analitycsTrafficPermissions,
     analitycs_business: analitycsBusinessPermissions,
     email: emailPermissions,
-  } = useAppPermissions();
+  } = Users.useAppPermissions();
 
   const [collapsed, setCollapsed] = useState<boolean>(defaultCollapsed);
   const [pinned, setPinned] = useState<boolean>(!defaultCollapsed);

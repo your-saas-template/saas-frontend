@@ -4,11 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { MediaApi, type MediaItem } from "@/entities/content/media";
-import {
-  useAuth,
-  useAppPermissions,
-  usePermissionGuard,
-} from "@/entities/identity";
+import { Auth, Users } from "@/entities/identity";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 
@@ -29,8 +25,8 @@ import { toast } from "@/shared/ui/toast/toast";
 export const DashboardMediaPage = () => {
   const { t } = useI18n();
   const router = useRouter();
-  const { loading: authLoading } = useAuth();
-  const { media: mediaPermissions } = useAppPermissions();
+  const { loading: authLoading } = Auth.useAuth();
+  const { media: mediaPermissions } = Users.useAppPermissions();
 
   const canViewMedia = mediaPermissions.any.view || mediaPermissions.own.view;
   const canCreateMedia =
@@ -40,7 +36,7 @@ export const DashboardMediaPage = () => {
   const canDeleteMedia =
     mediaPermissions.any.delete || mediaPermissions.own.delete;
 
-  const { canAccess } = usePermissionGuard({
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: canViewMedia,
   });
 

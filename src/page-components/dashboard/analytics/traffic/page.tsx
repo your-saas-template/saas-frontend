@@ -19,7 +19,7 @@ import { StatCard } from "@/widgets/analytics/overview";
 import { LineChart } from "@/shared/ui/charts/LineChart";
 import { BarChart } from "@/shared/ui/charts/BarChart";
 import { DatePicker, DateRange } from "@/shared/ui/forms/DatePicker";
-import { useAppPermissions, usePermissionGuard } from "@/entities/identity";
+import { Users } from "@/entities/identity";
 
 export const DashboardTrafficAnalyticsPage = () => {
   const { t, i18n } = useI18n();
@@ -301,8 +301,8 @@ export const DashboardTrafficAnalyticsPage = () => {
   );
 
   const { analitycs_traffic: analitycsTrafficPermissions } =
-    useAppPermissions();
-  const { canAccess } = usePermissionGuard({
+    Users.useAppPermissions();
+  const { canAccess } = Users.usePermissionGuard({
     canAccess: analitycsTrafficPermissions.view,
   });
   if (!canAccess) {

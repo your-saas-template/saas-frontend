@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/entities/identity";
+import { Auth } from "@/entities/identity";
 import { LoadingOverlay } from "@/shared/ui/loading/LoadingOverlay";
 
 type AuthGateMode = "private" | "auth";
@@ -18,7 +18,7 @@ export default function AuthGate({
   children,
   redirectTo,
 }: AuthGateProps) {
-  const { user, status } = useAuth();
+  const { user, status } = Auth.useAuth();
   const loading = status === "loading";
   const router = useRouter();
   const pathname = usePathname();

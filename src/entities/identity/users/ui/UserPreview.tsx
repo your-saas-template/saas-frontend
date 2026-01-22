@@ -1,8 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type { User } from "@/entities/identity";
-import { UserRoleEnum } from "@/entities/identity";
+import { Users } from "@/entities/identity";
 import { UserAvatar } from "./UserAvatar";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
@@ -10,7 +9,7 @@ import Tooltip, { TooltipPosition } from "@/shared/ui/Tooltip";
 import { getProductLabel } from "@/entities/monetization/billing";
 
 type UserPreviewProps = {
-  user: User | null;
+  user: Users.User | null;
   showEmail?: boolean;
   showPlan?: boolean;
   showRoleBadge?: boolean;
@@ -31,7 +30,7 @@ export const UserPreview = ({
 }: UserPreviewProps) => {
   const { t } = useI18n();
   const displayName = user?.name || user?.email || "";
-  const isAdmin = user?.role.key === UserRoleEnum.ADMIN;
+  const isAdmin = user?.role.key === Users.UserRoleEnum.ADMIN;
   const planLabel = getProductLabel(t, user?.plan);
   const roleLabel = isAdmin
     ? t(messages.roles.admin.name)

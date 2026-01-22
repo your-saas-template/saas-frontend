@@ -11,7 +11,7 @@ import { useOnEscape } from "@/shared/lib/hooks/useOnEscape";
 import { Languages } from "@/i18n/translations";
 import { useTheme } from "@/shared/lib/theme";
 import { setCookie } from "@/shared/lib/cookies";
-import { useAuth, UserApi } from "@/entities/identity";
+import { Auth, UserApi } from "@/entities/identity";
 
 const LANGS = Object.keys(translations).map((code) => ({
   code,
@@ -24,7 +24,7 @@ export const LanguageSwitcher = () => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser } = Auth.useAuth();
   const updateUser = UserApi.User.useUpdateUser();
   const { theme } = useTheme();
 

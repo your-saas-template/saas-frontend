@@ -8,7 +8,7 @@ import { useI18n } from "@/shared/lib/i18n";
 import { Button, ButtonSizeEnum } from "@/shared/ui/Button";
 import { Theme } from "@/shared/ui";
 import { useTheme } from "@/shared/lib/theme";
-import { UserApi, OAuthIntent } from "@/entities/identity";
+import { Auth, UserApi } from "@/entities/identity";
 import { registerSchema } from "@/entities/identity/auth/api/auth/validation";
 
 import { AuthView } from "@/widgets/auth/auth-view";
@@ -90,7 +90,7 @@ export const SignUpForm = () => {
     successToastKey: messages.notifications.auth.registerSuccess,
     redirectTo: "/dashboard",
     googleEnabled: true,
-    oauthIntent: OAuthIntent.register,
+    oauthIntent: Auth.OAuthIntent.register,
   });
 
   const handleAvatarSelectionChange = useCallback(
