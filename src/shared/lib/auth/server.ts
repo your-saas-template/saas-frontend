@@ -10,7 +10,8 @@ import { getSetCookies, mergeCookieHeader } from "@/shared/lib/auth/bff";
  * - Resolves current user from backend via cookie-based session
  */
 export const getUser = cache(async (): Promise<User | null> => {
-  const jar = await cookies();
+  const jar = cookies?.();
+  if (!jar) return null;
   const cookieHeader = jar
     .getAll()
     .map(({ name, value }) => `${name}=${value}`)

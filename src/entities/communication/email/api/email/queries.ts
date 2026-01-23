@@ -77,7 +77,7 @@ export const useEmailTemplates = (
   });
 
 export const usePreviewTemplate = () =>
-  useMutation({
+  useMutation<ApiResponse<TemplatePreviewResult>, Error, TemplatePreviewRequest>({
     mutationFn: async (
       payload: TemplatePreviewRequest,
     ): Promise<ApiResponse<TemplatePreviewResult>> => {
@@ -155,7 +155,7 @@ export const useUpdateMarketingTemplate = (id?: string) => {
 };
 
 export const usePreviewMarketingTemplate = (id?: string) =>
-  useMutation({
+  useMutation<ApiResponse<TemplatePreviewResult>, Error, MarketingPreviewRequest>({
     mutationFn: async (
       payload: MarketingPreviewRequest,
     ): Promise<ApiResponse<TemplatePreviewResult>> => {

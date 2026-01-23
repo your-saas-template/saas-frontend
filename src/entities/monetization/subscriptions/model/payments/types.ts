@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/shared/types/api/global';
-import { BonusSourceType } from '../../bonus/types';
+import { BonusSourceType } from '../../bonus/model/types';
 
 export enum PaymentStatus {
   PENDING = "pending",

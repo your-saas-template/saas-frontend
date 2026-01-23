@@ -7,6 +7,9 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import {
   AnalyticsApi,
   type DailyRevenue,
+  type DailyRegistrations,
+  type DailySubscriptions,
+  type DailySubscriptionsByStatus,
 } from "@/entities/analytics";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
@@ -26,6 +29,13 @@ import { BarChart } from "@/shared/ui/charts/BarChart";
 import { DatePicker, DateRange } from "@/shared/ui/forms/DatePicker";
 import { Users } from "@/entities/identity";
 
+type StatCardData = {
+  label: string;
+  value: string;
+  tooltip?: string;
+  helper?: string;
+  trend?: string;
+};
 
 export const DashboardBusinessAnalyticsPage = () => {
   const { t, i18n } = useI18n();
@@ -118,7 +128,7 @@ export const DashboardBusinessAnalyticsPage = () => {
       (data?.dailyRevenue ?? [])
         .slice()
         .sort(
-          (a: any, b: any) =>
+          (a: DailyRevenue, b: DailyRevenue) =>
             new Date(a.date).getTime() - new Date(b.date).getTime(),
         ),
     [data?.dailyRevenue],
@@ -126,7 +136,7 @@ export const DashboardBusinessAnalyticsPage = () => {
 
   const revenueSeries = useMemo(
     () =>
-      sortedDailyRevenue.map((row: any) => ({
+      sortedDailyRevenue.map((row) => ({
         label: dateFormatter.format(new Date(row.date)),
         total: row.totalAmount,
         subscription: row.subscriptionAmount,
@@ -149,11 +159,11 @@ export const DashboardBusinessAnalyticsPage = () => {
   );
 
   const subscriptionTotals = useMemo(() => {
-    if (!data?.dailySubscriptions?.length)
-      return { new: 0, canceled: 0, activeLike: 0 };
+    const rows: DailySubscriptions[] = data?.dailySubscriptions ?? [];
+    if (!rows.length) return { new: 0, canceled: 0, activeLike: 0 };
 
-    return data.dailySubscriptions.reduce(
-      (acc: any, row: any) => ({
+    return rows.reduce(
+      (acc, row) => ({
         new: acc.new + row.new,
         canceled: acc.canceled + row.canceled,
         activeLike: Math.max(acc.activeLike, row.activeLike),
@@ -163,11 +173,14 @@ export const DashboardBusinessAnalyticsPage = () => {
   }, [data?.dailySubscriptions]);
 
   const activeSeries = useMemo(() => {
-    if (!data?.dailySubscriptions?.length)
-      return [] as { label: string; value: number }[];
+    const rows: DailySubscriptions[] = data?.dailySubscriptions ?? [];
+    if (!rows.length) return [] as { label: string; value: number }[];
 
-    return [...data.dailySubscriptions]
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return [...rows]
+      .sort(
+        (a: DailySubscriptions, b: DailySubscriptions) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )
       .map((row) => ({
         label: dateFormatter.format(new Date(row.date)),
         value: row.activeLike,
@@ -178,7 +191,10 @@ export const DashboardBusinessAnalyticsPage = () => {
     () =>
       (data?.dailySubscriptions ?? [])
         .slice()
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .sort(
+          (a: DailySubscriptions, b: DailySubscriptions) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
+        )
         .map((row) => ({
           label: dateFormatter.format(new Date(row.date)),
           new: row.new,
@@ -191,7 +207,10 @@ export const DashboardBusinessAnalyticsPage = () => {
     () =>
       (data?.dailySubscriptionsByStatus ?? [])
         .slice()
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .sort(
+          (a: DailySubscriptionsByStatus, b: DailySubscriptionsByStatus) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
+        )
         .map((row) => ({
           label: dateFormatter.format(new Date(row.date)),
           active: row.active,
@@ -232,19 +251,20 @@ export const DashboardBusinessAnalyticsPage = () => {
   }, [data?.subscriptionStatusTotals, t]);
 
   const engagementSeries = useMemo(() => {
-    const registrations = data?.dailyRegistrations ?? [];
-    const subscriptions = data?.dailySubscriptions ?? [];
+    const registrations: DailyRegistrations[] =
+      data?.dailyRegistrations ?? [];
+    const subscriptions: DailySubscriptions[] = data?.dailySubscriptions ?? [];
 
     const combinedDates = new Set([
-      ...registrations.map((r: any) => r.date),
-      ...subscriptions.map((s: any) => s.date),
+      ...registrations.map((r) => r.date),
+      ...subscriptions.map((s) => s.date),
     ]);
 
     return Array.from(combinedDates)
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
       .map((date) => {
-        const reg = registrations.find((r: any) => r.date === date)?.count ?? 0;
-        const subs = subscriptions.find((s: any) => s.date === date)?.new ?? 0;
+        const reg = registrations.find((r) => r.date === date)?.count ?? 0;
+        const subs = subscriptions.find((s) => s.date === date)?.new ?? 0;
         return {
           label: dateFormatter.format(new Date(date)),
           registrations: reg,
@@ -285,7 +305,7 @@ export const DashboardBusinessAnalyticsPage = () => {
     [t],
   );
 
-  const monetizationCards = useMemo(
+  const monetizationCards = useMemo<StatCardData[]>(
     () => [
       {
         label: "Total revenue",
@@ -332,7 +352,7 @@ export const DashboardBusinessAnalyticsPage = () => {
     ],
   );
 
-  const retentionCards = useMemo(
+  const retentionCards = useMemo<StatCardData[]>(
     () => [
       {
         label: "ARPU",
@@ -378,7 +398,7 @@ export const DashboardBusinessAnalyticsPage = () => {
     ],
   );
 
-  const userCards = useMemo(
+  const userCards = useMemo<StatCardData[]>(
     () => [
       {
         label: "Users (end)",
@@ -500,7 +520,6 @@ export const DashboardBusinessAnalyticsPage = () => {
                         value={card.value}
                         tooltip={card.tooltip}
                         trend={card.trend}
-                        tooltip={card.tooltip}
                         accent="85%"
                       />
                     ))}

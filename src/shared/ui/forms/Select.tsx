@@ -60,13 +60,10 @@ export function Select({
     .filter(Boolean)
     .join(" ");
 
-  const selectedKeys = useMemo(() => {
-    if (!isMulti) return undefined;
-    return new Set(Array.isArray(value) ? value : []);
-  }, [isMulti, value]);
-
-  const selectedKey = useMemo(() => {
-    if (isMulti) return undefined;
+  const selectionValue = useMemo(() => {
+    if (isMulti) {
+      return Array.isArray(value) ? value : [];
+    }
     return typeof value === "string" && value !== "" ? value : null;
   }, [isMulti, value]);
 
@@ -92,29 +89,20 @@ export function Select({
         isDisabled={isDisabled}
         isInvalid={invalid}
         selectionMode={isMulti ? "multiple" : "single"}
-        selectedKey={selectedKey}
-        selectedKeys={selectedKeys}
+        value={selectionValue}
         onOpenChange={(isOpen) => {
           if (isOpen) setSearchValue("");
         }}
-        onSelectionChange={(selection) => {
+        onChange={(selection) => {
           if (isMulti) {
-            if (selection === "all") {
-              onChange(
-                options
-                  .filter((opt) => opt.value !== "")
-                  .map((opt) => opt.value),
-              );
-              return;
-            }
-            onChange(Array.from(selection) as string[]);
+            onChange(Array.isArray(selection) ? selection : []);
             return;
           }
-          if (!selection) {
+          if (!selection || selection === "all") {
             onChange("");
             return;
           }
-          onChange(selection as string);
+          onChange(String(selection));
         }}
         className="relative w-full"
       >

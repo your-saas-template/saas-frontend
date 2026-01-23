@@ -23,6 +23,11 @@ export interface UsersPaginationParams extends PaginationParams {
   plan?: string
 }
 
+export type UsersGetAllParams = Omit<UsersPaginationParams, "role" | "plan"> & {
+  role?: string;
+  plan?: string;
+};
+
 export interface UserRole {
   key: UserRoleEnum,
   name: string,
