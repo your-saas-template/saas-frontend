@@ -65,8 +65,8 @@ export function DatePicker(props: DatePickerProps) {
     const end = rangeTo
       ? toCalendarDate(fromDate(rangeTo, timeZone))
       : null;
-    if (!start && !end) return null;
-    return { start: start ?? null, end: end ?? null };
+    if (!start || !end) return null;
+    return { start, end };
   }, [isRange, rangeFrom, rangeTo, timeZone]);
 
   const singleValue = useMemo(() => {

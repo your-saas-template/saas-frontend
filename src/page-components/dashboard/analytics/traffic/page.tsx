@@ -2,7 +2,13 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { endOfDay, startOfDay, subDays } from "date-fns";
-import { AnalyticsApi, TrafficEventType } from "@/entities/analytics";
+import {
+  AnalyticsApi,
+  TrafficEventType,
+  type FeedbackByDate,
+  type TrafficEvent,
+  type TrafficTotals,
+} from "@/entities/analytics";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import { Theme, colors } from "@/shared/ui";
@@ -77,8 +83,8 @@ export const DashboardTrafficAnalyticsPage = () => {
     return `${formatter.format(appliedRange.from)} – ${formatter.format(appliedRange.to)}`;
   }, [appliedRange?.from, appliedRange?.to, language]);
 
-  const events = data?.events ?? [];
-  const totals = data?.stats?.totals;
+  const events: TrafficEvent[] = data?.events ?? [];
+  const totals: TrafficTotals | undefined = data?.stats?.totals;
 
   const dateFormatter = useMemo(
     () => new Intl.DateTimeFormat(language, { month: "short", day: "numeric" }),
@@ -100,7 +106,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     if (!events.length) return [] as { label: string; value: number }[];
 
     const grouped = events.reduce(
-      (acc: Record<string, number>, event: any) => {
+      (acc: Record<string, number>, event: TrafficEvent) => {
         const day = String(event.createdAt).slice(0, 10);
         acc[day] = (acc[day] ?? 0) + 1;
         return acc;
@@ -117,7 +123,7 @@ export const DashboardTrafficAnalyticsPage = () => {
   }, [dateFormatter, events]);
 
   const feedbackSeries = useMemo(() => {
-    const feedback = data?.stats?.feedbackByDate ?? [];
+    const feedback: FeedbackByDate[] = data?.stats?.feedbackByDate ?? [];
     return feedback
       .slice()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -132,7 +138,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     } as const;
 
     const calculated = events.reduce(
-      (acc, event) => {
+      (acc: TrafficTotals, event: TrafficEvent) => {
         const type = event.eventType as TrafficEventType;
         if (!acc[type]) return acc;
         acc[type].total += 1;
@@ -204,7 +210,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     if (!events.length) return [] as { label: string; value: number }[];
 
     const counts = events.reduce(
-      (acc: Record<string, number>, event: any) => {
+      (acc: Record<string, number>, event: TrafficEvent) => {
         const key = event.country || "?";
         acc[key] = (acc[key] ?? 0) + 1;
         return acc;
@@ -212,7 +218,7 @@ export const DashboardTrafficAnalyticsPage = () => {
       {} as Record<string, number>,
     );
 
-    return Object.entries(counts)
+    return (Object.entries(counts) as Array<[string, number]>)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([country, count]) => ({
@@ -225,7 +231,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     if (!events.length) return [] as { label: string; value: number }[];
 
     const counts = events.reduce(
-      (acc: Record<string, number>, event: any) => {
+      (acc: Record<string, number>, event: TrafficEvent) => {
         const key = event.device || t(messages.dashboard.analytics.traffic.columns.device);
         acc[key] = (acc[key] ?? 0) + 1;
         return acc;
@@ -233,7 +239,7 @@ export const DashboardTrafficAnalyticsPage = () => {
       {} as Record<string, number>,
     );
 
-    return Object.entries(counts)
+    return (Object.entries(counts) as Array<[string, number]>)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
       .map(([device, count]) => ({ label: device, value: count }));
@@ -243,7 +249,10 @@ export const DashboardTrafficAnalyticsPage = () => {
     () =>
       events
         .slice()
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        .sort(
+          (a: TrafficEvent, b: TrafficEvent) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
     [events],
   );
 
@@ -277,12 +286,12 @@ export const DashboardTrafficAnalyticsPage = () => {
       },
       {
         label: "Countries",
-        value: new Set(events.map((d: any) => d.country || "")).size.toString(),
+        value: new Set(events.map((d) => d.country || "")).size.toString(),
         tooltip: trafficTooltips.countries,
       },
       {
         label: "Devices",
-        value: new Set(events.map((d: any) => d.device || "")).size.toString(),
+        value: new Set(events.map((d) => d.device || "")).size.toString(),
         tooltip: trafficTooltips.devices,
       },
       {

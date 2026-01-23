@@ -7,19 +7,12 @@ import {
 import {
   UpdateUserRequest,
   User,
+  UsersGetAllParams,
   UsersPaginationParams,
 } from "@/entities/identity/users/model/user/types";
 import { userService } from "./service";
 import { Paginated } from "@/shared/types/api/pagination";
 import { notifySessionExpired } from "@/shared/lib/auth/session";
-
-// userService.getAll expects role/plan as strings (query params).
-// UsersPaginationParams in UI may type role as enum (UserRole), which conflicts.
-// Override role/plan via Omit to avoid intersection (UserRole & string).
-type UsersGetAllParams = Omit<UsersPaginationParams, "role" | "plan"> & {
-  role?: string;
-  plan?: string;
-};
 
 const normalizeUsersParams = (
   params?: UsersPaginationParams,
@@ -27,13 +20,18 @@ const normalizeUsersParams = (
   if (!params) return undefined;
 
   const anyParams = params as any;
+  const roleValue = anyParams.role;
+  const normalizedRole =
+    typeof roleValue === "object" && roleValue?.key
+      ? roleValue.key
+      : roleValue;
 
   return {
     ...(params as Omit<UsersPaginationParams, "role" | "plan">),
     role:
-      typeof anyParams.role === "undefined" || anyParams.role === null
+      typeof normalizedRole === "undefined" || normalizedRole === null
         ? undefined
-        : String(anyParams.role),
+        : String(normalizedRole),
     plan:
       typeof anyParams.plan === "undefined" || anyParams.plan === null
         ? undefined
