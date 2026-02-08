@@ -77,10 +77,8 @@ export const useEmailTemplates = (
   });
 
 export const usePreviewTemplate = () =>
-  useMutation({
-    mutationFn: async (
-      payload: TemplatePreviewRequest,
-    ): Promise<ApiResponse<TemplatePreviewResult>> => {
+  useMutation<ApiResponse<TemplatePreviewResult>, Error, TemplatePreviewRequest>({
+    mutationFn: async (payload) => {
       const { data } = await emailService.previewTemplate(payload);
       return data;
     },

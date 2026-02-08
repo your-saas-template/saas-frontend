@@ -50,7 +50,7 @@ export const ResetPasswordForm = () => {
         message: messages.validation.passwordMismatch,
         path: ["confirmPassword"],
       },
-    ) as z.ZodSchema<ResetPasswordValues>,
+    ),
     pick: {
       password: strongPassword,
       confirmPassword: z.string(),
@@ -66,15 +66,15 @@ export const ResetPasswordForm = () => {
 
       const res = await reset({ token, newPassword: v.password });
 
-      if (res?.success) {
+      if (!res?.error) {
         setVariant(FormMessageVariant.success);
         // show backend message if present, fallback to i18n
-        const message = res.message ?? t(messages.auth.passwordResetSuccess);
+        const message = t(messages.auth.passwordResetSuccess);
         setGlobalMsg(message);
         toast.success(t(messages.notifications.auth.passwordResetSuccess));
       } else {
         setVariant(FormMessageVariant.error);
-        const message = res?.message ?? t(messages.auth.passwordResetError);
+        const message = res?.error ?? t(messages.auth.passwordResetError);
         setGlobalMsg(message);
         toast.error(message);
       }

@@ -7,10 +7,10 @@ import axios from "axios";
 
 /** Stable query keys for this module. */
 export const subscriptionKeys = {
-  root: ["subscriptions"] as const,
-  me: () => [...subscriptionKeys.root, "me"] as const,
+  root: ["subscriptions"],
+  me: () => [...subscriptionKeys.root, "me"],
   byUser: (userId: string | undefined) =>
-    [...subscriptionKeys.root, "user", userId] as const,
+    [...subscriptionKeys.root, "user", userId],
 };
 
 export interface MySubscriptionResult {
@@ -28,21 +28,21 @@ export function useMySubscription(options?: { enabled?: boolean }) {
         const { data } = await subscriptionsService.me();
 
         const subscription = data?.data ?? null;
-        const success = Boolean(data?.success);
-        const message = data?.message ?? null;
+        const message = data?.error ?? null;
+        const success = !data?.error;
 
         return {
           subscription: success ? subscription : null,
           message,
           success,
-        } as MySubscriptionResult;
+        };
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           return {
             subscription: null,
             message: null,
             success: true,
-          } as MySubscriptionResult;
+          };
         }
 
         throw error;
@@ -95,21 +95,21 @@ export function useUserSubscription(userId: string | undefined, options?: { enab
       try {
         const { data } = await subscriptionsService.byUser(userId);
         const subscription = data?.data ?? null;
-        const success = Boolean(data?.success);
-        const message = data?.message ?? null;
+        const message = data?.error ?? null;
+        const success = !data?.error;
 
         return {
           subscription: success ? subscription : null,
           message,
           success,
-        } as MySubscriptionResult;
+        };
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           return {
             subscription: null,
             message: null,
             success: true,
-          } as MySubscriptionResult;
+          };
         }
 
         throw error;
