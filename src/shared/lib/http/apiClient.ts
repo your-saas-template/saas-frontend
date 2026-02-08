@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { AxiosError, AxiosInstance } from "axios";
 import { I18N, ENV } from "@/shared/config";
 import { getCookie } from "@/shared/lib/cookies";
 import { notifySessionExpired } from "@/shared/lib/auth/session";
@@ -6,6 +7,7 @@ import { notifySessionExpired } from "@/shared/lib/auth/session";
 declare module "axios" {
   export interface AxiosRequestConfig {
     __skipAuthRefresh?: boolean;
+    _retry?: boolean;
   }
 }
 
@@ -18,7 +20,7 @@ const AUTH_PUBLIC = [
 ];
 const AUTH_ANY = [/^\/api\/auth\//];
 
-export const apiClient = axios.create({
+export const apiClient: AxiosInstance = axios.create({
   baseURL: "",
   withCredentials: true,
 });
@@ -28,34 +30,44 @@ apiClient.interceptors.request.use((config) => {
 
   // i18n locale from cookie
   const lng = getCookie(I18N.LOCALE_COOKIE_KEY) || I18N.DEFAULT_LOCALE;
+  config.headers = config.headers ?? {};
   config.headers["Accept-Language"] = lng;
 
   const isAuthPublic = AUTH_PUBLIC.some((re) => re.test(url));
-  (config as any).__skipAuthRefresh = isAuthPublic;
+  config.__skipAuthRefresh = isAuthPublic;
   return config;
 });
 
 // refresh on 401 except auth endpoints or opted-out requests
 let isRefreshing = false;
-let failedQueue: Array<{
+type FailedQueueItem = {
   resolve: (t: string | null) => void;
-  reject: (e: any) => void;
-}> = [];
+  reject: (error: Error) => void;
+};
+let failedQueue: FailedQueueItem[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token)));
+const processQueue = (error: Error | null, token: string | null = null) => {
+  failedQueue.forEach((p) => {
+    if (error) {
+      p.reject(error);
+      return;
+    }
+    p.resolve(token);
+  });
   failedQueue = [];
 };
 
 apiClient.interceptors.response.use(
   (res) => res,
-  async (error) => {
-    const originalRequest = error.config || {};
+  async (error: AxiosError) => {
+    if (!error.config) {
+      return Promise.reject(error);
+    }
+    const originalRequest = error.config;
     const url = (originalRequest.url || "").replace(ENV.API_URL || "", "");
 
     const skip =
-      (originalRequest as any).__skipAuthRefresh ||
-      AUTH_ANY.some((re) => re.test(url));
+      originalRequest.__skipAuthRefresh || AUTH_ANY.some((re) => re.test(url));
 
     const isMeRequest = /^\/api\/me/.test(url);
 
@@ -69,12 +81,11 @@ apiClient.interceptors.response.use(
 
     if (!skip && error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise<string | null>((resolve, reject) =>
-          failedQueue.push({ resolve, reject }),
-        ).then((token) => {
+        return new Promise<string | null>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
           if (token) {
-            originalRequest.headers =
-              originalRequest.headers || ({} as typeof originalRequest.headers);
+            originalRequest.headers = originalRequest.headers ?? {};
             originalRequest.headers.Authorization = `Bearer ${token}`;
           }
           return apiClient(originalRequest);
@@ -98,7 +109,9 @@ apiClient.interceptors.response.use(
         processQueue(null, null);
         return apiClient(originalRequest);
       } catch (err) {
-        processQueue(err, null);
+        const errorToHandle =
+          err instanceof Error ? err : new Error("Failed to refresh session");
+        processQueue(errorToHandle, null);
         notifySessionExpired();
         return Promise.reject(err);
       } finally {

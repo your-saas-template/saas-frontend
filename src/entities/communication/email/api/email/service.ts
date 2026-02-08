@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/http/apiClient";
-import type { AxiosRequestConfig } from "axios";
+import type { AxiosRequestConfig, AxiosResponse } from "axios";
 import type {
   BroadcastEmailRequest,
   CreateMarketingTemplateRequest,
@@ -38,7 +38,9 @@ export const emailService = {
     apiClient.get<ApiResponse<TemplateListResponse>>("/api/email/templates"),
 
   /** POST /api/email/templates/preview */
-  previewTemplate: (body: TemplatePreviewRequest) =>
+  previewTemplate: (
+    body: TemplatePreviewRequest,
+  ): Promise<AxiosResponse<ApiResponse<TemplatePreviewResult>>> =>
     apiClient.post<ApiResponse<TemplatePreviewResult>>(
       "/api/email/templates/preview",
       body,

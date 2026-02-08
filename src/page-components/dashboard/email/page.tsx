@@ -28,6 +28,10 @@ import { MarketingTemplateModal } from "@/features/email/marketing-template";
 import { toast } from "@/shared/ui/toast/toast";
 import { defaultEmailBrandingColors } from "@/entities/communication/email/branding/lib/defaults";
 
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+type JsonRecord = Record<string, JsonValue>;
+
 const getDefaultBranding = (t: (key: string) => string): EmailBranding => ({
   brandName: t(messages.dashboard.email.branding.defaults.brandName),
   ...defaultEmailBrandingColors,
@@ -111,7 +115,7 @@ export const DashboardEmailPage = () => {
     templateKey: string;
     templateName: string;
     marketingTemplateId?: string;
-    defaultData?: Record<string, unknown>;
+    defaultData?: JsonRecord;
     subjectKey?: string;
     category?: EmailCategory;
     type: "system" | "marketing";
@@ -127,7 +131,7 @@ export const DashboardEmailPage = () => {
     templateKey?: string;
     templateName: string;
     marketingTemplateId?: string;
-    defaultData?: Record<string, unknown>;
+    defaultData?: JsonRecord;
     subjectKey?: string;
     category?: EmailCategory;
     type: "system" | "marketing";
@@ -156,13 +160,16 @@ export const DashboardEmailPage = () => {
       ("id" in tpl ? tpl.id : undefined) ||
       tpl.subjectKey ||
       String(key);
+    const previewData: JsonRecord = JSON.parse(
+      JSON.stringify(tpl.previewData ?? {}),
+    );
     setPreviewModal({
       open: true,
       templateKey: key,
       templateName,
       marketingTemplateId:
         type === "marketing" && "id" in tpl ? tpl.id : undefined,
-      defaultData: tpl.previewData ?? {},
+      defaultData: previewData,
       subjectKey: tpl.subjectKey,
       category:
         tpl.category ?? (type === "marketing" ? "marketing" : "transactional"),
@@ -183,13 +190,16 @@ export const DashboardEmailPage = () => {
       ("id" in tpl ? tpl.id : undefined) ||
       tpl.subjectKey ||
       String(key);
+    const previewData: JsonRecord = JSON.parse(
+      JSON.stringify(tpl.previewData ?? {}),
+    );
     setSendModal({
       open: true,
       templateKey: String(key),
       templateName,
       marketingTemplateId:
         type === "marketing" && "id" in tpl ? tpl.id : undefined,
-      defaultData: tpl.previewData ?? {},
+      defaultData: previewData,
       subjectKey: tpl.subjectKey,
       category:
         tpl.category ?? (type === "marketing" ? "marketing" : "transactional"),

@@ -39,17 +39,17 @@ export const ForgotPasswordForm = () => {
     isBusy,
   } = useAuthForm<ForgotValues>({
     initial: { email: "" },
-    schema: forgotPasswordSchema as z.ZodSchema<ForgotValues>,
+    schema: forgotPasswordSchema,
     pick: { email: forgotPasswordSchema.pick({ email: true }) },
     submit: async (v) => {
       const res = await forgot({ email: v.email });
-      if (res?.success) {
+      if (!res?.error) {
         setVariant(FormMessageVariant.success);
         setGlobalMsg(t(messages.auth.forgotPasswordEmailSent));
         toast.success(t(messages.notifications.auth.resetLinkSent));
       } else {
         setVariant(FormMessageVariant.error);
-        const message = res?.message || t(messages.auth.forgotPasswordError);
+        const message = res.error || t(messages.auth.forgotPasswordError);
         setGlobalMsg(message);
         toast.error(message);
       }

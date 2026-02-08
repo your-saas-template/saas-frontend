@@ -28,8 +28,12 @@ type EmailPreviewModalProps = {
   branding?: EmailBranding;
   subjectKey?: string;
   category?: EmailCategory;
-  defaultData?: Record<string, unknown>;
+  defaultData?: JsonRecord;
 };
+
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+type JsonRecord = Record<string, JsonValue>;
 
 const languages = Object.values(Languages);
 
@@ -66,9 +70,15 @@ export function EmailPreviewModal({
     setError(null);
   }, [open, defaultData]);
 
-  const parsedPayload = useMemo(() => {
+  const parsedPayload = useMemo((): JsonRecord | null => {
+    const trimmed = payload.trim();
+    if (!trimmed) return {};
     try {
-      return payload?.trim() ? JSON.parse(payload) : {};
+      const parsed: JsonValue = JSON.parse(trimmed);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        return parsed;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -94,7 +104,7 @@ export function EmailPreviewModal({
           locale,
         });
         setPreview({
-          html: res.data?.html ?? res.data?.data?.html,
+          html: res.data?.html,
           subject: res.data?.subject ?? subjectKey ?? templateName,
           locale: res.data?.locale ?? locale,
           data: parsed,
@@ -142,7 +152,11 @@ export function EmailPreviewModal({
               id="locale"
               value={locale}
               options={localeOptions}
-              onChange={(value) => setLocale(value as string)}
+              onChange={(value) => {
+                if (typeof value === "string") {
+                  setLocale(value);
+                }
+              }}
               isClearable={false}
             />
           </Field>
