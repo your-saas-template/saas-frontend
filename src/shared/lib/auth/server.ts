@@ -11,11 +11,14 @@ import { getSetCookies, mergeCookieHeader } from "@/shared/lib/auth/bff";
  */
 export const getUser = cache(async (): Promise<User | null> => {
   const jar = await cookies();
-  const cookieHeader = jar
-    .getAll()
+  const all =
+    typeof (jar as any).getAll === "function"
+      ? ((jar as any).getAll() as Array<{ name: string; value: string }>)
+      : [];
+
+  const cookieHeader = all
     .map(({ name, value }) => `${name}=${value}`)
     .join("; ");
-
   if (!cookieHeader) return null;
 
   const fetchMe = async (cookie: string) =>
@@ -46,7 +49,10 @@ export const getUser = cache(async (): Promise<User | null> => {
     return null;
   }
 
-  const mergedCookie = mergeCookieHeader(cookieHeader, getSetCookies(refreshResponse));
+  const mergedCookie = mergeCookieHeader(
+    cookieHeader,
+    getSetCookies(refreshResponse),
+  );
   const retryResponse = await fetchMe(mergedCookie);
   if (!retryResponse.ok) return null;
 

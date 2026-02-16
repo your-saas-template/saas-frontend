@@ -31,8 +31,6 @@ export type SelectProps = {
 
   id?: string;
   className?: string;
-
-  /** When true, renders error focus and border colors */
   invalid?: boolean;
 };
 
@@ -60,13 +58,10 @@ export function Select({
     .filter(Boolean)
     .join(" ");
 
-  const selectedKeys = useMemo(() => {
-    if (!isMulti) return undefined;
-    return new Set(Array.isArray(value) ? value : []);
-  }, [isMulti, value]);
-
   const selectedKey = useMemo(() => {
-    if (isMulti) return undefined;
+    if (isMulti) {
+      return new Set(Array.isArray(value) ? value : []);
+    }
     return typeof value === "string" && value !== "" ? value : null;
   }, [isMulti, value]);
 
@@ -92,12 +87,11 @@ export function Select({
         isDisabled={isDisabled}
         isInvalid={invalid}
         selectionMode={isMulti ? "multiple" : "single"}
-        selectedKey={selectedKey}
-        selectedKeys={selectedKeys}
+        selectedKey={selectedKey as any}
         onOpenChange={(isOpen) => {
           if (isOpen) setSearchValue("");
         }}
-        onSelectionChange={(selection) => {
+        onSelectionChange={(selection: any) => {
           if (isMulti) {
             if (selection === "all") {
               onChange(
@@ -183,12 +177,10 @@ export function Select({
         </Popover>
       </AriaSelect>
 
-      {/* ✅ Clear button must be OUTSIDE AriaSelect */}
       {isClearable && hasValue && (
         <button
           type="button"
           onMouseDown={(e) => {
-            // prevent focus shift + prevent opening the Select
             e.preventDefault();
             e.stopPropagation();
           }}

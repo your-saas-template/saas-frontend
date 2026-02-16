@@ -1,4 +1,4 @@
-export { colors } from "./theme/colors";
+export { colors } from "./theme/colors.js";
 export * from "./theme/NoFlashThemeScript";
 
 export enum Theme {

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { endOfDay, startOfDay, subDays } from "date-fns";
-import { AnalyticsApi, TrafficEventType } from "@/entities/analytics";
+import { AnalyticsApi, FeedbackByDate, TrafficAccumulator, TrafficEvent, TrafficEventType } from "@/entities/analytics";
 import { messages } from "@/i18n/messages";
 import { useI18n } from "@/shared/lib/i18n";
 import { Theme, colors } from "@/shared/ui";
@@ -77,7 +77,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     return `${formatter.format(appliedRange.from)} – ${formatter.format(appliedRange.to)}`;
   }, [appliedRange?.from, appliedRange?.to, language]);
 
-  const events = data?.events ?? [];
+  const events: TrafficEvent[] = data?.events ?? [];
   const totals = data?.stats?.totals;
 
   const dateFormatter = useMemo(
@@ -120,8 +120,14 @@ export const DashboardTrafficAnalyticsPage = () => {
     const feedback = data?.stats?.feedbackByDate ?? [];
     return feedback
       .slice()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((row) => ({ label: dateFormatter.format(new Date(row.date)), value: row.count }));
+      .sort(
+        (a: FeedbackByDate, b: FeedbackByDate) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )
+      .map((row: FeedbackByDate) => ({
+        label: dateFormatter.format(new Date(row.date)),
+        value: row.count,
+      }));
   }, [data?.stats?.feedbackByDate, dateFormatter]);
 
   const aggregatedTotals = useMemo(() => {
@@ -132,7 +138,7 @@ export const DashboardTrafficAnalyticsPage = () => {
     } as const;
 
     const calculated = events.reduce(
-      (acc, event) => {
+      (acc: TrafficAccumulator, event: TrafficEvent) => {
         const type = event.eventType as TrafficEventType;
         if (!acc[type]) return acc;
         acc[type].total += 1;

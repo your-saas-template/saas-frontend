@@ -20,8 +20,16 @@ import {
   RangeCalendar,
 } from "react-aria-components";
 import { I18nProvider } from "react-aria";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { fromDate, getLocalTimeZone, toCalendarDate } from "@internationalized/date";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  fromDate,
+  getLocalTimeZone,
+  toCalendarDate,
+} from "@internationalized/date";
 
 export type DateRange = {
   from?: Date;
@@ -53,25 +61,29 @@ export function DatePicker(props: DatePickerProps) {
   const localeCode = props.language ?? "en-US";
   const timeZone = getLocalTimeZone();
   const isRange = props.mode === "range";
-  const rangeFrom = isRange ? (props as RangeDatePickerProps).value?.from : undefined;
-  const rangeTo = isRange ? (props as RangeDatePickerProps).value?.to : undefined;
-  const singleDate = !isRange ? (props as SingleDatePickerProps).value : undefined;
+  const rangeFrom = isRange
+    ? (props as RangeDatePickerProps).value?.from
+    : undefined;
+  const rangeTo = isRange
+    ? (props as RangeDatePickerProps).value?.to
+    : undefined;
+  const singleDate = !isRange
+    ? (props as SingleDatePickerProps).value
+    : undefined;
 
   const rangeValue = useMemo(() => {
-    if (!isRange) return null;
-    const start = rangeFrom
-      ? toCalendarDate(fromDate(rangeFrom, timeZone))
-      : null;
-    const end = rangeTo
-      ? toCalendarDate(fromDate(rangeTo, timeZone))
-      : null;
-    if (!start && !end) return null;
-    return { start: start ?? null, end: end ?? null };
+    if (!isRange) return undefined;
+    if (!rangeFrom || !rangeTo) return undefined;
+
+    return {
+      start: toCalendarDate(fromDate(rangeFrom, timeZone)),
+      end: toCalendarDate(fromDate(rangeTo, timeZone)),
+    };
   }, [isRange, rangeFrom, rangeTo, timeZone]);
 
   const singleValue = useMemo(() => {
-    if (isRange) return null;
-    if (!singleDate) return null;
+    if (isRange) return undefined;
+    if (!singleDate) return undefined;
     return toCalendarDate(fromDate(singleDate, timeZone));
   }, [isRange, singleDate, timeZone]);
 
@@ -80,7 +92,7 @@ export function DatePicker(props: DatePickerProps) {
       <I18nProvider locale={localeCode}>
         <DateRangePicker
           id={props.id}
-          value={rangeValue ?? undefined}
+          value={rangeValue}
           onChange={(range) => {
             if (!range?.start && !range?.end) {
               (props as RangeDatePickerProps).onChange(undefined);
@@ -190,7 +202,7 @@ export function DatePicker(props: DatePickerProps) {
     <I18nProvider locale={localeCode}>
       <AriaDatePicker
         id={props.id}
-        value={singleValue ?? undefined}
+        value={singleValue}
         onChange={(date) => {
           if (!date) {
             (props as SingleDatePickerProps).onChange(undefined);

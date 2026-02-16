@@ -22,6 +22,17 @@ export interface TrafficEvent {
   createdAt: string;
 }
 
+type TrafficStats = {
+  total: number;
+  unique: number;
+};
+
+export type TrafficAccumulator = {
+  [TrafficEventType.PageView]: TrafficStats;
+  [TrafficEventType.Click]: TrafficStats;
+  [TrafficEventType.FormSubmit]: TrafficStats;
+};
+
 export interface TrackEventRequest {
   sessionId: string;
   eventType: TrafficEventType;

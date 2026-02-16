@@ -6,6 +6,8 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 
 import {
   AnalyticsApi,
+  DailySubscriptions,
+  DailySubscriptionsByStatus,
   type DailyRevenue,
 } from "@/entities/analytics";
 import { messages } from "@/i18n/messages";
@@ -178,8 +180,11 @@ export const DashboardBusinessAnalyticsPage = () => {
     () =>
       (data?.dailySubscriptions ?? [])
         .slice()
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .map((row) => ({
+        .sort(
+          (a: DailySubscriptions, b: DailySubscriptions) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
+        )
+        .map((row: DailySubscriptions) => ({
           label: dateFormatter.format(new Date(row.date)),
           new: row.new,
           canceled: row.canceled,
@@ -191,8 +196,11 @@ export const DashboardBusinessAnalyticsPage = () => {
     () =>
       (data?.dailySubscriptionsByStatus ?? [])
         .slice()
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .map((row) => ({
+        .sort(
+          (a: DailySubscriptionsByStatus, b: DailySubscriptionsByStatus) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
+        )
+        .map((row: DailySubscriptionsByStatus) => ({
           label: dateFormatter.format(new Date(row.date)),
           active: row.active,
           trialing: row.trialing,
@@ -500,7 +508,6 @@ export const DashboardBusinessAnalyticsPage = () => {
                         value={card.value}
                         tooltip={card.tooltip}
                         trend={card.trend}
-                        tooltip={card.tooltip}
                         accent="85%"
                       />
                     ))}
@@ -519,8 +526,6 @@ export const DashboardBusinessAnalyticsPage = () => {
                         key={card.label}
                         label={card.label}
                         value={card.value}
-                        helper={card.helper}
-                        trend={card.trend}
                         tooltip={card.tooltip}
                         accent="85%"
                       />
@@ -538,8 +543,6 @@ export const DashboardBusinessAnalyticsPage = () => {
                         key={card.label}
                         label={card.label}
                         value={card.value}
-                        helper={card.helper}
-                        trend={card.trend}
                         tooltip={card.tooltip}
                         accent="85%"
                       />

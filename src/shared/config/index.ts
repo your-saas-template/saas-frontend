@@ -10,8 +10,8 @@ export const ENV = {
 } as const;
 
 export const AUTH = {
-  TOKEN_COOKIE_KEY: "accessToken",
-  REFRESH_COOKIE_KEY: "rt",
+  TOKEN_COOKIE_KEY: "access_token",
+  REFRESH_COOKIE_KEY: "refresh_token",
   USER_COOKIE_KEY: "user",
 } as const;
 

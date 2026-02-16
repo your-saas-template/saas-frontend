@@ -1,10 +1,9 @@
-import type { Config } from "tailwindcss";
-import { themePlugin } from "./src/shared/styles/tailwind.plugin";
+const { themePlugin } = require("./src/shared/styles/tailwind.plugin.js");
 
-const config: Config = {
+module.exports = {
   darkMode: "class",
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
-  theme: { 
+  theme: {
     extend: {
       colors: {
         primary: "var(--color-primary)",
@@ -32,5 +31,3 @@ const config: Config = {
   },
   plugins: [themePlugin],
 };
-
-export default config;

@@ -30,6 +30,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/shared/ui/theme/colors.js", "src/shared/styles/tailwind.plugin.js", "tailwind.config.js"  ],
   "exclude": ["node_modules"]
 }
