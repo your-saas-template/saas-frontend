@@ -4,7 +4,7 @@ import { themePlugin } from "./src/shared/styles/tailwind.plugin";
 const config: Config = {
   darkMode: "class",
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
-  theme: {
+  theme: { 
     extend: {
       colors: {
         primary: "var(--color-primary)",

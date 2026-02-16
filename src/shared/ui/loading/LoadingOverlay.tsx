@@ -38,7 +38,7 @@ export const LoadingOverlay = ({
       aria-live="polite"
       className={clsx(
         isGlobal
-          ? "fixed inset-0 z-50 bg-background"
+          ? "fixed top-0 left-0 inset-0 z-50 bg-background mb-0!"
           : "absolute inset-0 z-20 bg-surface rounded-[inherit]",
         variant === "spinner"
           ? "flex items-center justify-center"
