@@ -1,7 +1,5 @@
 export const ENV = {
   API_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001",
-  FRONTEND_URL:
-    process.env.NEXT_PUBLIC_FRONTEND_BASE_URL || "http://localhost:5173",
   NODE_ENV: process.env.NODE_ENV || "development",
   // OAuth providers
   GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
