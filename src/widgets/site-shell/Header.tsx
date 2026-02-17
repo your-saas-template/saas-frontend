@@ -32,13 +32,13 @@ export const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 w-full z-50 bg-background text-text border-b border-border backdrop-blur-md bg-background/90">
-        <Container className="flex items-center justify-between py-2.5 px-3 md:py-3.5">
-          <div className="shrink-0">
+        <Container className="flex items-center justify-between py-2.5 px-3 md:py-3.5 py-3!">
+          <div className="shrink-0 mb-0">
             <Logo />
           </div>
 
           {/* desktop */}
-          <nav className="hidden md:flex items-center gap-6 !mt-0">
+          <nav className="hidden md:flex items-center gap-6 !mt-0 mb-0">
             <NavLinks links={headerLinks} />
             <LanguageSwitcher />
             <ThemeToggle />
@@ -47,7 +47,10 @@ export const Header = () => {
 
           {/* mobile */}
           <div className="flex items-center gap-2 md:hidden !mt-0">
-            <div className="scale-90 origin-right" onPointerDown={closeBurgerBeforeUserMenu}>
+            <div
+              className="scale-90 origin-right"
+              onPointerDown={closeBurgerBeforeUserMenu}
+            >
               <UserMenu key={userMenuEpoch} />
             </div>
 

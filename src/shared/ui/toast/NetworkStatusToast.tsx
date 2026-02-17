@@ -18,12 +18,11 @@ function NetworkStatusToastContent({
   const isOffline = mode === "offline";
   const isWeak = mode === "weak";
 
-  const bg =
-    isOffline
-      ? "bg-dangerSoft text-danger border-danger"
-      : isWeak
-      ? "bg-warningSoft text-warning border-warning"
-      : "bg-successSoft text-success border-success";
+  const bg = isOffline
+    ? "bg-dangerSoft text-danger border-danger"
+    : isWeak
+    ? "bg-warningSoft text-warning border-warning"
+    : "bg-successSoft text-success border-success";
 
   return (
     <div
@@ -107,6 +106,9 @@ export default function NetworkStatusToast() {
   );
   const checkRef = useRef<number | null>(null);
 
+  const hasShownAnyProblemRef = useRef(false);
+  const lastRestoredAtRef = useRef<number>(0);
+
   const clearToastRef = () => {
     if (toastRef.current?.timeout) {
       window.clearTimeout(toastRef.current.timeout);
@@ -147,27 +149,41 @@ export default function NetworkStatusToast() {
     }
   };
 
-  const showWeak = () => showToast("weak", 3000);
-  const showOffline = () => showToast("offline", Infinity);
-  const showOnline = () => showToast("online", 2500);
+  const showWeak = () => {
+    hasShownAnyProblemRef.current = true;
+    showToast("weak", 3000);
+  };
+
+  const showOffline = () => {
+    hasShownAnyProblemRef.current = true;
+    showToast("offline", Infinity);
+  };
+
+  const showOnlineOnceAfterProblem = () => {
+    if (!hasShownAnyProblemRef.current) return;
+
+    const now = Date.now();
+    if (now - lastRestoredAtRef.current < 4000) return;
+    if (modeRef.current === "online") return;
+
+    lastRestoredAtRef.current = now;
+    showToast("online", 2500);
+  };
 
   useEffect(() => {
     return () => {
-      if (toastRef.current) {
-        toast.dismiss(toastRef.current.id);
-      }
+      if (toastRef.current) toast.dismiss(toastRef.current.id);
       if (checkRef.current) window.clearInterval(checkRef.current);
     };
   }, []);
 
   useEffect(() => {
     const connection =
-      typeof navigator !== "undefined"
-        ? (navigator as any).connection
-        : null;
+      typeof navigator !== "undefined" ? (navigator as any).connection : null;
 
-    const checkWeak = () => {
-      if (!connection) return;
+    const computeMode = (): NetworkMode => {
+      if (!navigator.onLine) return "offline";
+      if (!connection) return "online";
 
       const type = connection.effectiveType;
       const down = connection.downlink;
@@ -180,34 +196,55 @@ export default function NetworkStatusToast() {
         down < 1 ||
         rtt > 300;
 
-      if (weak && modeRef.current === "online") showWeak();
-      if (!weak && modeRef.current === "weak") showOnline();
+      return weak ? "weak" : "online";
     };
 
-    const handleOffline = () => showOffline();
-    const handleOnline = () => showOnline();
+    const applyMode = (next: NetworkMode) => {
+      const prev = modeRef.current;
+      if (next === prev) return;
 
-    if (typeof navigator !== "undefined" && !navigator.onLine) showOffline();
+      if (next === "offline") {
+        showOffline();
+        return;
+      }
+
+      if (next === "weak") {
+        showWeak();
+        return;
+      }
+
+      showOnlineOnceAfterProblem();
+    };
+
+    const tick = () => {
+      const next = computeMode();
+      applyMode(next);
+    };
+
+    const handleOffline = () => applyMode("offline");
+    const handleOnline = () => tick();
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      applyMode("offline");
+    } else {
+      modeRef.current = "online";
+    }
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
     if (connection) {
-      connection.addEventListener("change", checkWeak);
-      checkWeak();
+      connection.addEventListener("change", tick);
     }
 
-    checkRef.current = window.setInterval(() => {
-      if (navigator.onLine) {
-        if (connection) checkWeak();
-        else showOnline();
-      } else showOffline();
-    }, 8000);
+    tick();
+
+    checkRef.current = window.setInterval(tick, 8000);
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
-      if (connection) connection.removeEventListener("change", checkWeak);
+      if (connection) connection.removeEventListener("change", tick);
       if (checkRef.current) window.clearInterval(checkRef.current);
     };
   }, []);
