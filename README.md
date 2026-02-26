@@ -1,34 +1,115 @@
-# Frontend (Next.js + TypeScript)
+# SaaS Frontend (Next.js + TypeScript)
 
-Проект — Next.js (App Router) приложение на TypeScript. Код организован так, чтобы:
-- маршруты (`src/app/`) были тонкими и не содержали бизнес-логики;
-- доменные модули были изолированы и переиспользуемы;
-- UI-kit и утилиты не зависели от бизнес-кода;
-- было понятно, куда класть новый код и как его импортировать.
+Frontend template for SaaS / Dashboard applications built with:
 
-## Быстрый старт
+**Next.js (App Router) + TypeScript + React 19**
+
+Designed for:
+- clear domain boundaries
+- scalable modular architecture
+- reusable UI-kit layer
+- predictable import structure
+- clean separation between route layer and business logic
+
+Works together with the SaaS Backend API.
+
+---
+
+## 🌍 API Integration
+
+Backend base URL is configured via environment variable:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5001
+````
+
+Production example:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://backend-29gv.onrender.com
+```
+
+Google OAuth client (if used):
+
+```env
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+```
+
+---
+
+## 🚀 Getting Started
+
+### Requirements
+
+* Node.js 20+
+* Backend API running
+
+### Install
 
 ```bash
 npm install
+```
+
+### Development
+
+```bash
 npm run dev
-````
+```
 
-Открыть: [http://localhost:3000](http://localhost:3000)
+Runs:
 
-## Архитектура и структура папок
+* Next.js dev server
+* TypeScript type-check in watch mode
 
-Код делится на слои. Импортировать можно только “вниз” по слоям:
+Open:
 
-`app -> pages -> widgets -> features -> entities -> shared`
+```
+http://localhost:3000
+```
 
-### `src/app/` — маршруты Next.js (тонкий слой)
+---
 
-Только `layout.tsx`, `page.tsx`, route groups и Next-специфика.
+### Production Build
 
-Правило: **никаких больших компонентов и бизнес-логики**.
-Route должен просто подключать модуль страницы из `src/pages`.
+```bash
+npm run build
+npm run start
+```
 
-Пример:
+---
+
+## 🧱 Architecture Overview
+
+The project follows a layered architecture inspired by Feature-Sliced Design.
+
+Layer rule:
+
+```
+app → pages → widgets → features → entities → shared
+```
+
+Imports are allowed only downward.
+
+---
+
+## 📂 Folder Structure
+
+### `src/app/` — Route Layer (thin)
+
+Contains:
+
+* `layout.tsx`
+* `page.tsx`
+* route groups
+* Next.js specific files
+
+Rules:
+
+* No heavy UI
+* No business logic
+* Only connects page modules from `src/pages`
+
+Example:
 
 ```tsx
 import { DashboardEmailPage } from "@/pages/dashboard/email";
@@ -38,107 +119,178 @@ export default function Page() {
 }
 ```
 
-### `src/pages/` — модули страниц
+---
 
-Собирают страницу из `widgets/features/entities`.
+### `src/pages/` — Page Modules
 
-Использовать, когда UI/логика относится строго к конкретному route.
+Composes a full route from widgets/features/entities.
 
-Пример:
+Examples:
 
 * `pages/dashboard/email`
 * `pages/dashboard/billing`
 * `pages/dashboard/analytics`
 
-### `src/widgets/` — крупные блоки страниц
+---
 
-Большие секции, которые можно переиспользовать на разных страницах:
+### `src/widgets/` — Large UI Blocks
 
-* `widgets/app-shell` (Header/Sidebar)
+Reusable page sections:
+
+* `widgets/app-shell`
 * `widgets/billing/current-subscription`
 * `widgets/analytics/overview`
 
-Правило: widget может собирать несколько features/entities.
+Widgets can combine multiple features/entities.
 
-### `src/features/` — пользовательские действия (операции)
+---
 
-Изолированные “use-cases”: отправить email, отменить подписку, апгрейднуть план.
+### `src/features/` — Use Cases (User Actions)
 
-Содержит:
+Encapsulated operations:
 
-* `ui/` (формы/модалки/кнопки операции)
-* `model/` (хуки useCase)
-* `api/` (если API именно про действие)
+* send email
+* cancel subscription
+* upgrade plan
+* sign-in
 
-Примеры:
+Structure:
+
+```
+feature-name/
+  ui/
+  model/
+  api/
+```
+
+Examples:
 
 * `features/email/send`
 * `features/billing/cancel-subscription`
 * `features/auth/sign-in`
 
-### `src/entities/` — доменные сущности
+---
 
-Описывают данные и минимальный UI для их отображения.
+### `src/entities/` — Domain Entities
 
-Содержит:
+Represents core domain objects and minimal UI for them.
 
-* `model/` (types/state helpers)
-* `api/` (запросы сущности)
-* `ui/` (компоненты отображения сущности: card/badge/avatar)
+Contains:
 
-Примеры:
+* `model/`
+* `api/`
+* `ui/`
+
+Examples:
 
 * `entities/subscription`
 * `entities/email-template`
 * `entities/analytics`
 
-### `src/shared/` — базовый слой (не знает о бизнесе)
+---
 
-Здесь лежит всё, что может переиспользоваться везде и не должно зависеть от доменов:
+### `src/shared/` — Base Layer (No Business Logic)
 
-* `shared/ui` — UI-kit primitives (Button/Input/Modal/Charts primitives и т.д.)
-* `shared/lib` — утилиты, форматтеры, общие хуки, http client
-* `shared/config` — env, routes, constants
-* `shared/styles` — глобальные стили
-* `shared/types` — базовые типы
+Reusable and independent utilities:
 
-### `src/i18n/` — переводы
+* `shared/ui` — UI-kit primitives
+* `shared/lib` — helpers, formatters, HTTP client
+* `shared/config` — env, constants, routes
+* `shared/styles` — global styles
+* `shared/types` — base types
 
-Хранение переводов по локалям и namespaces (например `common`, `email`, `billing`, `analytics`).
+This layer must not depend on higher layers.
 
-### `src/app-providers/` — провайдеры приложения
+---
 
-Единое место для подключения:
+### `src/i18n/`
 
-* темы
+Translation files grouped by namespace:
+
+* `common`
+* `email`
+* `billing`
+* `analytics`
+
+Uses:
+
+* `i18next`
+* `react-i18next`
+
+---
+
+### `src/app-providers/`
+
+Global providers:
+
+* theme
 * i18n
 * auth/session
-* query state (если используется)
+* React Query
 
-Подключается в корневом `src/app/layout.tsx`.
+Connected in:
 
-## Правила импортов (важно)
+```
+src/app/layout.tsx
+```
 
-1. Импортируем модуль через публичный API (`index.ts`):
+---
 
-   * ✅ `import { SubscriptionBadge } from "@/entities/subscription";`
-   * ❌ `import { SubscriptionBadge } from "@/entities/subscription/ui/SubscriptionBadge";`
+## 📦 Tech Stack
 
-2. Слои не должны импортировать “вверх”:
+* Next.js 16 (App Router)
+* React 19
+* TypeScript
+* TailwindCSS 4
+* React Query (@tanstack/react-query)
+* Axios
+* Zod (validation)
+* i18next
+* Recharts
+* React Aria
+* Sonner (notifications)
 
-* `entities` не импортирует `features/widgets/pages/app`
-* `shared` не импортирует ничего кроме `shared`
+---
 
-## Где создавать новый код
+## 📜 NPM Scripts
 
-* Новый домен (например “notifications”) → `entities/notifications` + `features/notifications/*` + widgets/pages при необходимости.
-* Новый экран в dashboard → `pages/dashboard/<screen>` + соответствующие widgets/features.
-* Новый общий компонент кнопки/инпута → `shared/ui`.
-* Новый форматтер/хелпер → `shared/lib`.
+```bash
+npm run dev        # Next.js + type-check watch
+npm run build      # Production build
+npm run start      # Production start
+npm run lint       # ESLint
+npm run typecheck  # TypeScript check
+```
 
-## Скрипты
+---
 
-* `npm run dev` — локальная разработка
-* `npm run build` — production build
-* `npm run start` — запуск production
-* `npm run lint` — линтер
+## 📐 Import Rules
+
+1. Always import via public API (`index.ts`):
+
+   ✅
+
+   ```ts
+   import { SubscriptionBadge } from "@/entities/subscription";
+   ```
+
+   ❌
+
+   ```ts
+   import { SubscriptionBadge } from "@/entities/subscription/ui/SubscriptionBadge";
+   ```
+
+2. No upward imports:
+
+   * `entities` must not import `features/widgets/pages/app`
+   * `shared` must not import anything except `shared`
+
+---
+
+## 🎯 Design Goals
+
+* Scalable dashboard architecture
+* Strict domain isolation
+* Replaceable backend
+* Clean API integration
+* Production-ready auth + billing UI
